@@ -1,13 +1,28 @@
 class ReactiveEffect {
     private _fn: () => void;
+    deps = [];
+    active=true;
     constructor(fn, public scheduler?) {
         this._fn = fn;
+        this.scheduler=scheduler;
     }
     run() {
         currentEffect = this;
         return this._fn();
     }
+    stop() {
+        // 将当前的effect移除(需要从deps中移除effect)
+        if(this.active){
+            cleanupEffect(this);
+            this.active=false
+        }
+    }
 }
+function cleanupEffect(effect) {
+    effect.deps.forEach((dep: any) => {
+        dep.delete(effect);
+    })
+};
 // 依赖收集
 const targetMap = new Map();
 export const track = (target, key) => {
@@ -22,7 +37,9 @@ export const track = (target, key) => {
         deps = new Set();
         depsMap.set(key, deps);
     }
+    if(!currentEffect) return;
     deps.add(currentEffect);//需要将依赖进行收集，如何收集拿到fn呢？通过全局变量的形式，获取到当前的effect实例
+    currentEffect.deps.push(deps)
 }
 // 触发依赖
 export const trigger = (target, key) => {
@@ -39,10 +56,18 @@ export const trigger = (target, key) => {
 }
 let currentEffect;
 
-export const effect= (fn, options?:any) => {
+//stop方法
+export function stop(runner) {
+    //runner中绑定了当前runner的effect
+    runner.effect.stop();//执行实例中的stop方法
+}
+
+export const effect = (fn, options?: any) => {
     const scheduler = options?.scheduler;
     //接收一个fn,执行这个fn,才能拿到dependedFoo的初始值
-    const _effect = new ReactiveEffect(fn, scheduler);
+    const _effect: any = new ReactiveEffect(fn, scheduler);
     _effect.run();
-    return _effect.run.bind(_effect);
+    let runner = _effect.run.bind(_effect);
+    runner.effect = _effect;
+    return runner;
 }
