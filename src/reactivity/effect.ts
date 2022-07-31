@@ -1,73 +1,104 @@
-class ReactiveEffect {
-    private _fn: () => void;
-    deps = [];
-    active=true;
-    constructor(fn, public scheduler?) {
-        this._fn = fn;
-        this.scheduler=scheduler;
+class Effective {
+  private _fn: any;
+  public schedule: any;
+  onStop: (() => void) | undefined;
+  deps: Set<any> = new Set();
+  private _active = true;
+  constructor(fn, schedule?) {
+    this._fn = fn;
+    this.schedule = schedule;
+  }
+  run() {
+    activeEffect = this;
+    return this._fn();
+  }
+  stop() {
+    // 需要将当前的effect从deps中移除,我们如何通过effect找到其对应的deps呢？需要在effect上记录一下当前的deps
+    // 优化：调用多次stop时，也只清除一次
+    if (this._active) {
+      this.deps.delete(this);
+      // 调用stop的时候，会执行传入的onStop方法
+      if (this.onStop) this.onStop();
+      this._active = false;
     }
-    run() {
-        currentEffect = this;
-        return this._fn();
-    }
-    stop() {
-        // 将当前的effect移除(需要从deps中移除effect)
-        if(this.active){
-            cleanupEffect(this);
-            this.active=false
-        }
-    }
+  }
 }
-function cleanupEffect(effect) {
-    effect.deps.forEach((dep: any) => {
-        dep.delete(effect);
-    })
+/**
+ * 描述：effect方法作为响应式数据依赖的入口方法
+ * @param { Function } fn 传入的响应式数据相关的方法
+ * @return void
+ */
+function effect(fn, options: any = {}) {
+  const { schedule, onStop } = options;
+  // 首先需要触发传入的fn，只有当触发了fn才会触发proxy的get方法,进行依赖收集
+  const effectFn = new Effective(fn, schedule);
+  // 后续只要是有属性都可以合并到实例化对象中去;
+  Object.assign(effectFn, options);
+  effectFn.run();
+  const runner: any = effectFn.run.bind(effectFn);
+  runner.effect = effectFn;
+  return runner;
+}
+/*
+ * 描述：全局用来收集所有依赖的容器
+ * 其他说明：这里使用weakmap是因为key是对象，且不会造成内存溢出
+ */
+const targetMap = new WeakMap();
+/*
+ * 描述：全局表示当前effect
+ * 其他说明：
+ */
+let activeEffect;
+/**
+ * 描述：对依赖进行相对应的收集
+ * @param {  }
+ * @return
+ */
+function track(target, key) {
+  let depsMap = targetMap.get(target);
+  // 判断是否有关于对象的map容器存放对应内容
+  if (!depsMap) {
+    depsMap = new Map();
+    targetMap.set(target, depsMap);
+  }
+  let set = depsMap.get(key);
+  if (!set) {
+    // 说明当前key还未收集，则需要重新创建一个Set结构
+    set = new Set();
+    depsMap.set(key, set);
+  }
+  // 需要将当前的effect进行存储，所以定义一个全局的activeEffect
+  if (!activeEffect) return;
+  set.add(activeEffect);
+  activeEffect.deps = set;
+}
+/**
+ * 描述：对依赖进行触发
+ * @param { {[key:string]:any} } target 目标对象
+ * @param { string } key 目标key
+ * @return void
+ */
+function trigger(target, key) {
+  let depsMap = targetMap.get(target);
+  let set = depsMap.get(key);
+  for (let key of set) {
+    if (key.schedule) {
+      key.schedule();
+    } else {
+      key.run();
+    }
+  }
+}
+/**
+ * 描述：实现一个stop方法，该方法传入runner，需要清除响应式的触发
+ * @param {  } runner 调用effect之后返回的函数
+ * @return
+ */
+const stop = (runner) => {
+  // 我们要实现响应式对象改动之后，不执行effect，就要看trigger是如何实现的
+  // trigger的触发是根据key找到对应的deps进行遍历，然后逐个执行里面的run方法
+  // 换句话说，我是不是只要通过stop方法的执行，将effect从deps中移除，那么后续即使遍历去触发run方法的时候就不会执行了
+  // 现在的问题在于，我们只接收一个runner方法，如何通过runner找到其对应的effect?所以需要在runner方法上挂载一个属性，这个属性的值就是effect
+  runner.effect.stop();
 };
-// 依赖收集
-const targetMap = new Map();
-export const track = (target, key) => {
-    //收集依赖的对应关系，一个响应式对象例如：{foo:1,name:'josey'},对应n各key,每一个key都有可能存在n个被依赖的关系，所以target对应key存在map关系,n个依赖关系是不能重复的，所以是set结构
-    let depsMap = targetMap.get(target);
-    if (!depsMap) {
-        depsMap = new Map();
-        targetMap.set(target, depsMap);
-    }
-    let deps = depsMap.get(key);
-    if (!deps) {
-        deps = new Set();
-        depsMap.set(key, deps);
-    }
-    if(!currentEffect) return;
-    deps.add(currentEffect);//需要将依赖进行收集，如何收集拿到fn呢？通过全局变量的形式，获取到当前的effect实例
-    currentEffect.deps.push(deps)
-}
-// 触发依赖
-export const trigger = (target, key) => {
-    // 找到deps
-    const depsMap = targetMap.get(target);
-    const deps = depsMap.get(key);
-    for (const effect of deps) {
-        if (effect.scheduler) {
-            effect.scheduler();
-        } else {
-            effect.run();
-        }
-    }
-}
-let currentEffect;
-
-//stop方法
-export function stop(runner) {
-    //runner中绑定了当前runner的effect
-    runner.effect.stop();//执行实例中的stop方法
-}
-
-export const effect = (fn, options?: any) => {
-    const scheduler = options?.scheduler;
-    //接收一个fn,执行这个fn,才能拿到dependedFoo的初始值
-    const _effect: any = new ReactiveEffect(fn, scheduler);
-    _effect.run();
-    let runner = _effect.run.bind(_effect);
-    runner.effect = _effect;
-    return runner;
-}
+export { effect, track, trigger, stop };

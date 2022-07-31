@@ -1,28 +1,17 @@
 {
-  "name": "study-mini-vue",
+  "name": "test-mini-vue",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
-  "scripts": {
-    "test": "jest"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/joseypan/study-mini-vue.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/joseypan/study-mini-vue/issues"
-  },
-  "homepage": "https://github.com/joseypan/study-mini-vue#readme",
+  "license": "MIT",
   "devDependencies": {
-    "@babel/core": "^7.15.5",
-    "@babel/preset-env": "^7.15.6",
-    "@babel/preset-typescript": "^7.15.0",
-    "@types/jest": "^27.0.2",
-    "babel-jest": "^27.2.4",
-    "jest": "^27.2.4"
+    "@babel/core": "^7.18.9",
+    "@babel/preset-env": "^7.18.9",
+    "@babel/preset-typescript": "^7.18.6",
+    "@types/jest": "^28.1.6",
+    "babel-jest": "^28.1.3",
+    "jest": "^28.1.3"
+  },
+  "scripts": {
+    "start": "jest"
   }
 }
