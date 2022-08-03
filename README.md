@@ -17,3 +17,6 @@ https://www.wolai.com/9ivGs65eR4Y643fofSwjUN
 
 ## readonly功能
 https://www.wolai.com/h5Je2V78xXVVQpzHiuV6Qn
+
+## isReactive和isReadonly
+https://www.wolai.com/w4nsM4jLU2yeVV9kucyC15
