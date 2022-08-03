@@ -5,6 +5,7 @@ import { track, trigger } from "./effect";
  */
 const get = createGetter();
 const set = createSetter();
+const readonlyGet = createGetter(true);
 const readonlySet = createReadonlySetter();
 
 /**
@@ -52,6 +53,6 @@ export const mutableHandlers = {
   set,
 };
 export const mutableReadonlyHandlers = {
-  get,
+  get: readonlyGet,
   set: readonlySet,
 };
