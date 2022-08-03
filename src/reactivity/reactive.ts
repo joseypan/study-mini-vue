@@ -1,31 +1,18 @@
 import { mutableHandlers, mutableReadonlyHandlers } from "./baseHandlers";
 import { track, trigger } from "./effect";
-/**
- * 描述：创建一个get方法
- * @param { boolean } isReadonly 是否是只读方法
- * @return ()=>any
+/*
+ * 描述：定义数据状态的枚举值
+ * 其他说明：
  */
-function createGetter(isReadonly = false) {
-  return function (target, key) {
-    if (!isReadonly) {
-      // 这里需要做依赖收集(只有当不是reandonly时候，才做依赖收集)
-      track(target, key);
-    }
-    return Reflect.get(target, key);
-  };
-}
-
-/**
- * 描述：创建一个set方法，用来处理set操作
- * @return ()=>boolean
- */
-function createSetter() {
-  return function (target, key, value) {
-    // 这里需要触发相应的依赖
-    Reflect.set(target, key, value);
-    trigger(target, key);
-    return true;
-  };
+export enum ObjectStatusEnum {
+  /*
+   * 描述：IS_ACTIVE表示当前数据是响应式数据
+   */
+  IS_ACTIVE = "__is_active",
+  /*
+   * 描述：IS_READONLY表示当前数据是只读数据
+   */
+  IS_READONLY = "__is_readonly",
 }
 /**
  * 描述：声明响应式对象
@@ -44,6 +31,22 @@ export function readonly(raw) {
   return createActiveObject(raw, mutableReadonlyHandlers);
 }
 
+/**
+ * 描述：判断是否是响应式对象的方法
+ * @param { {[key:string]:any}|typeof Proxy } raw 传入检测的对象
+ * @return boolean
+ */
+export function isReactive(raw) {
+  return !!raw[ObjectStatusEnum.IS_ACTIVE];
+}
+/**
+ * 描述：判断数据是否是只读对象的方法
+ * @param { {[key:string]:any}|typeof Proxy } raw 传入检测的对象
+ * @return boolean
+ */
+export function isReadonly(raw) {
+  return !!raw[ObjectStatusEnum.IS_READONLY];
+}
 /**
  * 描述：将创建proxy对象的方法进行统一提取
  * @param { {[key:string]:any} } raw 需要响应式处理的源对象

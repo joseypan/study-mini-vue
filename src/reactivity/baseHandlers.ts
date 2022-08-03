@@ -1,4 +1,5 @@
 import { track, trigger } from "./effect";
+import { ObjectStatusEnum } from "./reactive";
 /*
  * 描述：为了防止get和set方法每次都重新声明，所以做优化，让其只初始化声明一次
  * 其他说明：
@@ -15,6 +16,11 @@ const readonlySet = createReadonlySetter();
  */
 function createGetter(isReadonly = false) {
   return function (target, key) {
+    if (key === ObjectStatusEnum.IS_ACTIVE) {
+      return !isReadonly;
+    } else if (key === ObjectStatusEnum.IS_READONLY) {
+      return isReadonly;
+    }
     if (!isReadonly) {
       // 这里需要做依赖收集(只有当不是reandonly时候，才做依赖收集)
       track(target, key);

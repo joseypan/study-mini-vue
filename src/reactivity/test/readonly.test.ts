@@ -1,4 +1,4 @@
-import { readonly } from "../reactive";
+import { isReadonly, readonly } from "../reactive";
 
 describe("readonly", () => {
   it("happy path", () => {
@@ -7,6 +7,8 @@ describe("readonly", () => {
     const readonlyData = readonly(raw);
     expect(readonlyData).not.toBe(raw);
     expect(readonlyData.num).toBe(2);
+    expect(isReadonly(readonlyData)).toBe(true);
+    expect(isReadonly(raw)).toBe(false);
   });
   it("no set", () => {
     const raw = { num: 2 };
