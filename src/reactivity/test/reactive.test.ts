@@ -1,4 +1,4 @@
-import reactive from "../reactive";
+import { reactive } from "../reactive";
 
 // 使用import语法报错，那是因为我们执行的是node环境，默认是commonjs语法，但是我们想要兼容esm模块，所以哟啊借助babel
 describe("reactive", () => {
