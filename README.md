@@ -11,3 +11,9 @@ https://www.wolai.com/iP4UBj5BTZAW9g3g4shzNZ?theme=light
 
 ## effect的scheduler
 https://www.wolai.com/fWhU2a3TVVR7UMf3e3xh6y?theme=light
+
+## effect的stop和onStop
+https://www.wolai.com/9ivGs65eR4Y643fofSwjUN
+
+## readonly功能
+https://www.wolai.com/h5Je2V78xXVVQpzHiuV6Qn
