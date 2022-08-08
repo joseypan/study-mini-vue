@@ -2,7 +2,7 @@ class Effective {
   private _fn: any;
   public schedule: any;
   onStop: (() => void) | undefined;
-  deps: Set<any> = new Set();
+  deps: Array<Set<any>> = [];
   private _active = true;
   constructor(fn, schedule?) {
     this._fn = fn;
@@ -16,12 +16,25 @@ class Effective {
     // 需要将当前的effect从deps中移除,我们如何通过effect找到其对应的deps呢？需要在effect上记录一下当前的deps
     // 优化：调用多次stop时，也只清除一次
     if (this._active) {
-      this.deps.delete(this);
+      //为什么这里需要清空呢？因为effect传入的fn可能是动态的，当某些值发生改动的时候，可能已经不需要再和effect绑定了，所以先统一清空，当执行fn的响应式数据get时，又会进行收集
+      cleanupEffect(this);
       // 调用stop的时候，会执行传入的onStop方法
       if (this.onStop) this.onStop();
       this._active = false;
     }
   }
+}
+/**
+ * 描述：用来清空关于此effect的所有deps,这里的deps是一个数组是因为同样的一个effect实例可能绑定了多个响应式对象的值，所以我们需要将和它有关的都遍历一遍将自己删除
+ *  例如：effect(()=>num = obj.count+obj.number)这里effect实例对应了两个变量，count和number.当我们effect不生效的时候，应该去count的Set和number的Set都将effect移除
+ * @param { Effect } effect
+ * @return void
+ */
+function cleanupEffect(effect) {
+  effect.deps.forEach((dep) => {
+    dep.delete(effect);
+  });
+  effect.deps.length = 0;
 }
 /**
  * 描述：effect方法作为响应式数据依赖的入口方法
@@ -70,7 +83,11 @@ function track(target, key) {
   // 需要将当前的effect进行存储，所以定义一个全局的activeEffect
   if (!activeEffect) return;
   set.add(activeEffect);
-  activeEffect.deps = set;
+  /*
+   * 描述：[纠正]这里每个effect收集的deps是个数组，为什么会是一个数组呢？
+   * 其他说明：
+   */
+  activeEffect.deps.push(set);
 }
 /**
  * 描述：对依赖进行触发

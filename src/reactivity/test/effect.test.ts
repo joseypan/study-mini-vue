@@ -57,6 +57,8 @@ describe("effect", () => {
     stop(runner);
     reactiveRaw.foo = 10;
     expect(num).toBe(5);
+    // reactiveRaw.foo++;
+    // expect(num).toBe(5);
     runner();
     expect(num).toBe(10);
   });
