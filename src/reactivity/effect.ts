@@ -1,3 +1,4 @@
+let shouldTrack;
 class Effective {
   private _fn: any;
   public schedule: any;
@@ -9,8 +10,16 @@ class Effective {
     this.schedule = schedule;
   }
   run() {
+    // 说明已经调用过stop了,那么我们不应该去收集
+    if (!this._active) {
+      return this._fn();
+    }
+    shouldTrack = true;
     activeEffect = this;
-    return this._fn();
+    // 为什么是调用之后，再将shouldTrack状态改为false呢,这样只要执行过一次收集之后就一直都是false了
+    const result = this._fn();
+    shouldTrack = false;
+    return result;
   }
   stop() {
     // 需要将当前的effect从deps中移除,我们如何通过effect找到其对应的deps呢？需要在effect上记录一下当前的deps
@@ -68,6 +77,7 @@ let activeEffect;
  * @return
  */
 function track(target, key) {
+  if (!isTracking()) return;
   let depsMap = targetMap.get(target);
   // 判断是否有关于对象的map容器存放对应内容
   if (!depsMap) {
@@ -80,14 +90,26 @@ function track(target, key) {
     set = new Set();
     depsMap.set(key, set);
   }
-  // 需要将当前的effect进行存储，所以定义一个全局的activeEffect
-  if (!activeEffect) return;
-  set.add(activeEffect);
   /*
-   * 描述：[纠正]这里每个effect收集的deps是个数组，为什么会是一个数组呢？
-   * 其他说明：
+   * 描述：【优化】判断是否已经包含了activeEffect,若已经包含则不需要再次添加
    */
-  activeEffect.deps.push(set);
+  if (!set.has(activeEffect)) {
+    set.add(activeEffect);
+    /*
+     * 描述：[纠正]这里每个effect收集的deps是个数组，为什么会是一个数组呢？
+     * 其他说明：
+     */
+    activeEffect.deps.push(set);
+  }
+}
+/**
+ * 描述：判断当前是否是可收集状态
+ * @return boolean true表示可收集 false表示不可收集
+ */
+function isTracking() {
+  // 如果当前不应该被收集，则直接返回，不执行下面的操作
+  // 需要将当前的effect进行存储，所以定义一个全局的activeEffect
+  return shouldTrack && activeEffect;
 }
 /**
  * 描述：对依赖进行触发

@@ -55,12 +55,16 @@ describe("effect", () => {
     reactiveRaw.foo = 5;
     expect(num).toBe(5);
     stop(runner);
-    reactiveRaw.foo = 10;
-    expect(num).toBe(5);
-    // reactiveRaw.foo++;
+    // reactiveRaw.foo = 10;
     // expect(num).toBe(5);
+    // 当我们将测试实例改成reactiveRaw.foo++之后测试就不通过了
+    // 这是因为reactiveRaw.foo++可以拆解为reactiveRaw.foo = reactiveRaw.foo+1;这里同时触发了get和set方法
+    // 当我们触发get方法时会进行依赖的收集，set方法则会将收集到的方法都执行，执行之后就会改变数值
+    // 按照正常思维来说，如果我已经调用了stop方法，那么我肯定是希望即使触发了get方法，也不要收集
+    reactiveRaw.foo++;
+    expect(num).toBe(5);
     runner();
-    expect(num).toBe(10);
+    expect(num).toBe(6);
   });
   it("onStop", () => {
     let reactiveRaw = reactive({ foo: 22 });
