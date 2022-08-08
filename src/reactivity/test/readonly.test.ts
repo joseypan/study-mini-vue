@@ -17,4 +17,17 @@ describe("readonly", () => {
     readonlyData.num++;
     expect(console.warn).toBeCalled();
   });
+  it("nest object", () => {
+    const foo = {
+      bar: {
+        name: "josey",
+      },
+      age: 25,
+      data: [{ gender: "female" }],
+    };
+    const readonlyFoo = readonly(foo);
+    expect(isReadonly(readonlyFoo.bar)).toBe(true);
+    expect(isReadonly(readonlyFoo.data)).toBe(true);
+    expect(isReadonly(readonlyFoo.data[0])).toBe(true);
+  });
 });

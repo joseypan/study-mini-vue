@@ -11,4 +11,18 @@ describe("reactive", () => {
     expect(isReactive(observed)).toBe(true);
     expect(isReactive(raw)).toBe(false);
   });
+
+  it("nest object", () => {
+    const foo = {
+      bar: {
+        name: "josey",
+      },
+      age: 25,
+      data: [{ gender: "female" }],
+    };
+    const reactiveFoo = reactive(foo);
+    expect(isReactive(reactiveFoo.bar)).toBe(true);
+    expect(isReactive(reactiveFoo.data)).toBe(true);
+    expect(isReactive(reactiveFoo.data[0])).toBe(true);
+  });
 });

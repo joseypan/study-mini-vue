@@ -1,5 +1,6 @@
+import { isObject } from "../share";
 import { track, trigger } from "./effect";
-import { ObjectStatusEnum } from "./reactive";
+import { ObjectStatusEnum, reactive, readonly } from "./reactive";
 /*
  * 描述：为了防止get和set方法每次都重新声明，所以做优化，让其只初始化声明一次
  * 其他说明：
@@ -25,7 +26,12 @@ function createGetter(isReadonly = false) {
       // 这里需要做依赖收集(只有当不是reandonly时候，才做依赖收集)
       track(target, key);
     }
-    return Reflect.get(target, key);
+    // 需要对获取到的值进行判断，判断其值是否是对象类型，如果是对象类型需要进一步的处理
+    let result = Reflect.get(target, key);
+    if (isObject(result)) {
+      return isReadonly ? readonly(result) : reactive(result);
+    }
+    return result;
   };
 }
 

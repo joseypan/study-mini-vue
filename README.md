@@ -23,3 +23,6 @@ https://www.wolai.com/w4nsM4jLU2yeVV9kucyC15
 
 ## 优化stop功能
 https://www.wolai.com/3QYH4jp5SnNg6QaBqYyNyi
+
+## 实现reactive和readonly嵌套对象转换功能
+https://www.wolai.com/SdgTQf7LijTqtfBqMjuGb
