@@ -20,3 +20,6 @@ https://www.wolai.com/h5Je2V78xXVVQpzHiuV6Qn
 
 ## isReactive和isReadonly
 https://www.wolai.com/w4nsM4jLU2yeVV9kucyC15
+
+## 优化stop功能
+https://www.wolai.com/3QYH4jp5SnNg6QaBqYyNyi
