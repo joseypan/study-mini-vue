@@ -9,13 +9,14 @@ const get = createGetter();
 const set = createSetter();
 const readonlyGet = createGetter(true);
 const readonlySet = createReadonlySetter();
+const shallowReadonlyGet = createGetter(true, true);
 
 /**
  * 描述：创建一个get方法
  * @param { boolean } isReadonly 是否是只读方法
  * @return ()=>any
  */
-function createGetter(isReadonly = false) {
+function createGetter(isReadonly = false, isShallow = false) {
   return function (target, key) {
     if (key === ObjectStatusEnum.IS_ACTIVE) {
       return !isReadonly;
@@ -28,7 +29,7 @@ function createGetter(isReadonly = false) {
     }
     // 需要对获取到的值进行判断，判断其值是否是对象类型，如果是对象类型需要进一步的处理
     let result = Reflect.get(target, key);
-    if (isObject(result)) {
+    if (!isShallow && isObject(result)) {
       return isReadonly ? readonly(result) : reactive(result);
     }
     return result;
@@ -66,5 +67,10 @@ export const mutableHandlers = {
 };
 export const mutableReadonlyHandlers = {
   get: readonlyGet,
+  set: readonlySet,
+};
+
+export const mutableShallowReadonlyHandlers = {
+  get: shallowReadonlyGet,
   set: readonlySet,
 };
