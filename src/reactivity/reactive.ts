@@ -1,4 +1,8 @@
-import { mutableHandlers, mutableReadonlyHandlers } from "./baseHandlers";
+import {
+  mutableHandlers,
+  mutableReadonlyHandlers,
+  mutableShallowReadonlyHandlers,
+} from "./baseHandlers";
 import { track, trigger } from "./effect";
 /*
  * 描述：定义数据状态的枚举值
@@ -63,4 +67,13 @@ export function isProxy(raw) {
  */
 function createActiveObject(raw, type) {
   return new Proxy(raw, type);
+}
+
+/**
+ * 描述：创建一个shallowReadonly对象
+ * @param { {[key:string]:any} } raw 传入需要实现响应式的对象
+ * @return Proxy 被Proxy代理过后的对象
+ */
+export function shallowReadonly(raw) {
+  return createActiveObject(raw, mutableShallowReadonlyHandlers);
 }
