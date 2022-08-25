@@ -48,6 +48,14 @@ export function isReadonly(raw) {
   return !!raw[ObjectStatusEnum.IS_READONLY];
 }
 /**
+ * 描述：判断当前数据是否是响应式的（只要是isReactive和isReadonly都算数)
+ * @param { {[key:string]:any} } raw 传入待检测的对象
+ * @return boolean true标识是响应式 false表示不是响应式
+ */
+export function isProxy(raw) {
+  return isReactive(raw) || isReadonly(raw);
+}
+/**
  * 描述：将创建proxy对象的方法进行统一提取
  * @param { {[key:string]:any} } raw 需要响应式处理的源对象
  * @param { string } type 需要处理的类型
