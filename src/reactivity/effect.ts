@@ -90,6 +90,14 @@ function track(target, key) {
     set = new Set();
     depsMap.set(key, set);
   }
+  trackEffects(set);
+}
+/**
+ * 描述：处理Set结构存放依赖的方法
+ * @param { Set } set 用来存放依赖收集的集合
+ * @return void
+ */
+export function trackEffects(set) {
   /*
    * 描述：【优化】判断是否已经包含了activeEffect,若已经包含则不需要再次添加
    */
@@ -106,7 +114,7 @@ function track(target, key) {
  * 描述：判断当前是否是可收集状态
  * @return boolean true表示可收集 false表示不可收集
  */
-function isTracking() {
+export function isTracking() {
   // 如果当前不应该被收集，则直接返回，不执行下面的操作
   // 需要将当前的effect进行存储，所以定义一个全局的activeEffect
   return shouldTrack && activeEffect;
@@ -120,6 +128,14 @@ function isTracking() {
 function trigger(target, key) {
   let depsMap = targetMap.get(target);
   let set = depsMap.get(key);
+  triggerEffects(set);
+}
+/**
+ * 描述：处理依赖触发的逻辑
+ * @param { Set } set 收集到的依赖集合
+ * @return void
+ */
+export function triggerEffects(set) {
   for (let key of set) {
     if (key.schedule) {
       key.schedule();
