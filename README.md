@@ -26,3 +26,9 @@ https://www.wolai.com/3QYH4jp5SnNg6QaBqYyNyi
 
 ## 实现reactive和readonly嵌套对象转换功能
 https://www.wolai.com/SdgTQf7LijTqtfBqMjuGb
+
+## 实现shallowReadonly
+https://www.wolai.com/ckAqutbxiCURH4ovF1qRc8
+
+## 实现isProxy功能
+https://www.wolai.com/4GHDcv5GpUtRuEbkdbTPvC
