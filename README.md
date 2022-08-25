@@ -32,3 +32,6 @@ https://www.wolai.com/ckAqutbxiCURH4ovF1qRc8
 
 ## 实现isProxy功能
 https://www.wolai.com/4GHDcv5GpUtRuEbkdbTPvC
+
+## 实现ref功能
+https://www.wolai.com/xo8PCNuusaG6orgsmAz7RH
