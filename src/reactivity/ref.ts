@@ -60,3 +60,23 @@ export function isRef(value) {
 export function unRef(value) {
   return isRef(value) ? value.value : value;
 }
+/**
+ * 描述：处理proxyRefs这个方法，用来去除ref的.value获值的，像template中即使不用.value也能获取到值
+ * @param { any } 传入待处理的类型
+ * @return Proxy
+ */
+export function proxyRefs(data) {
+  // 根据测试用例，可以要考虑其获取值和设置值，并且还是响应式的。所以还是得考虑使用Proxy
+  return new Proxy(data, {
+    get(target, key) {
+      return unRef(Reflect.get(target, key));
+    },
+    set(target, key, newValue) {
+      if (isRef(target[key]) && !isRef(newValue)) {
+        return (target[key].value = newValue);
+      } else {
+        return Reflect.set(target, key, newValue);
+      }
+    },
+  });
+}
