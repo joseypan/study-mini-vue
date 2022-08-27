@@ -10,6 +10,7 @@ class RefImp {
   private _value: any;
   public deps: Set<unknown>;
   private _rawValue: any;
+  public __v_isRef = true;
   constructor(value) {
     this._rawValue = value;
     // 需要考虑传入的value是不是对象
@@ -42,4 +43,20 @@ class RefImp {
  */
 export function ref(value) {
   return new RefImp(value);
+}
+/**
+ * 描述：判断当前数据是否是ref类型
+ * @param { any } value 用来判断的值
+ * @return boolean true表示是ref false表示不是ref
+ */
+export function isRef(value) {
+  return !!value.__v_isRef;
+}
+/**
+ * 描述：获取数据的真实值
+ * @param { any } value 用来获取的值
+ * @return any
+ */
+export function unRef(value) {
+  return isRef(value) ? value.value : value;
 }
