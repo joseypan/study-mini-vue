@@ -1,5 +1,5 @@
 let shouldTrack;
-class Effective {
+export class Effective {
   private _fn: any;
   public schedule: any;
   onStop: (() => void) | undefined;

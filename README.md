@@ -41,3 +41,6 @@ https://www.wolai.com/aB8iCMEULoB5YDaT5wm1Xz
 
 ## 实现proxyRefs功能
 https://www.wolai.com/crhsLUuETSRwCZeXWBtXwE
+
+## 实现computed功能
+https://www.wolai.com/dvb9rb9KnViYfuq9yXriTo
