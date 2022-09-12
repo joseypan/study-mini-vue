@@ -1,7 +1,8 @@
 {
   "name": "test-mini-vue",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "lib/guide-mini-vue.cjs.js",
+  "module": "lib/guid-mini-vue.esm.js",
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.18.9",
