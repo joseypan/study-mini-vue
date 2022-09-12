@@ -7,11 +7,18 @@
     "@babel/core": "^7.18.9",
     "@babel/preset-env": "^7.18.9",
     "@babel/preset-typescript": "^7.18.6",
+    "@rollup/plugin-typescript": "^8.5.0",
     "@types/jest": "^28.1.6",
     "babel-jest": "^28.1.3",
-    "jest": "^28.1.3"
+    "jest": "^28.1.3",
+    "rollup": "^2.79.0",
+    "tslib": "^2.4.0"
   },
   "scripts": {
-    "start": "jest"
+    "start": "jest",
+    "build": "rollup -c rollup.config.js"
+  },
+  "dependencies": {
+    "typescript": "^4.8.3"
   }
 }

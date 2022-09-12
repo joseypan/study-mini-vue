@@ -20,6 +20,7 @@ function patch(
   container: any
 ) {
   // 判断vnode是什么类型的，是元素类型还是组件类型？由于我们优先处理的是根组件，所以先只考虑组件类型
+  // processElement()
   processComponent(vnode, container);
 }
 

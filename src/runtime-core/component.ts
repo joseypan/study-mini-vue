@@ -5,11 +5,13 @@ export function createComponentInstance(vnode: {
 }) {
   const component = {
     vnode,
+    type: vnode.type,
   };
   return component;
 }
 export function setupComponent(instance: {
   vnode: { type: any; props: any; children: any };
+  type: any;
 }) {
   // 处理props
   // 处理slot
@@ -17,9 +19,10 @@ export function setupComponent(instance: {
   setupStatefulComponent(instance);
 }
 function setupStatefulComponent(instance: {
-  vnode: { type: any; props: any; children: any };
+  vnode: { type: any; props: any; children: any; setup? };
+  type: any;
 }) {
-  const { setup } = instance.vnode.type;
+  const { setup } = instance.type;
   if (setup) {
     // 只有当setup存在时才需要做处理
     // setup是一个function但是其返回值有两种形式，一种是object一种是function。优先只考虑object类型
@@ -36,8 +39,6 @@ function handleSetupResult(instance: any, setupResult: any) {
   finishComponentSetup(instance);
 }
 function finishComponentSetup(instance: any) {
-  const Component = instance.vnode.type;
-  if (Component.render) {
-    instance.render = Component.render;
-  }
+  const Component = instance.type;
+  instance.render = Component.render;
 }
