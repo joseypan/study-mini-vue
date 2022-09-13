@@ -1,3 +1,8 @@
+/**
+ * 描述：创建组件实例化对象
+ * @param { any } vnode 虚拟dom
+ * @return  object
+ */
 export function createComponentInstance(vnode: {
   type: any;
   props: any;
@@ -9,6 +14,11 @@ export function createComponentInstance(vnode: {
   };
   return component;
 }
+/**
+ * 描述：处理组件的setup阶段逻辑
+ * @param { any } instance
+ * @return void
+ */
 export function setupComponent(instance: {
   vnode: { type: any; props: any; children: any };
   type: any;
@@ -18,6 +28,11 @@ export function setupComponent(instance: {
   // 处理setup
   setupStatefulComponent(instance);
 }
+/**
+ * 描述：处理有状态组件的setup逻辑
+ * @param { any } instance 组件实例化对象
+ * @return void
+ */
 function setupStatefulComponent(instance: {
   vnode: { type: any; props: any; children: any; setup? };
   type: any;

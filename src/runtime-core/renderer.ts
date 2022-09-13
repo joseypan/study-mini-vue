@@ -1,5 +1,10 @@
 import { createComponentInstance, setupComponent } from "./component";
-
+/**
+ * 描述：处理虚拟dom渲染的逻辑
+ * @param { any } vnode 虚拟dom
+ * @param { any } container dom要插入到的dom容器在哪
+ * @return
+ */
 export function render(
   vnode: {
     type: any; // 由于我们后续调用是在createApp(xxx).mount(xxx),所以返回一定是有mount方法的
@@ -11,6 +16,12 @@ export function render(
   // 调用patch方法不断去处理容器和vnode之间的关系处理
   patch(vnode, container);
 }
+/**
+ * 描述：处理渲染逻辑
+ * @param { any } vnode 虚拟dom
+ * @param { any } container dom要插入到的dom容器在哪
+ * @return
+ */
 function patch(
   vnode: {
     type: any;
@@ -26,7 +37,12 @@ function patch(
     processComponent(vnode, container);
   }
 }
-
+/**
+ * 描述：处理组件的逻辑（包括初始化组件和更新组件）
+ * @param { any } vnode 虚拟dom
+ * @param { any } container dom要插入到的dom容器在哪
+ * @return void
+ */
 function processComponent(
   vnode: { type: any; props: any; children: any },
   container: any
@@ -35,6 +51,12 @@ function processComponent(
   mountComponent(vnode, container);
   // 组件更新状态的处理
 }
+/**
+ * 描述：初始化组件内容
+ * @param { any } vnode 虚拟dom
+ * @param { any } container dom要插入到的dom容器在哪
+ * @return void
+ */
 function mountComponent(
   vnode: { type: any; props: any; children: any },
   container: any
@@ -46,6 +68,11 @@ function mountComponent(
   // 渲染组件内容;
   setupRenderEffect(instance, container);
 }
+/**
+ * 描述：在setup执行完之后处理组件渲染的逻辑
+ * @param { any } instance 组件实例化对象
+ * @return void
+ */
 function setupRenderEffect(instance: any, container: any) {
   const subTree = instance.render();
   patch(subTree, container);
