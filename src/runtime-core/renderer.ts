@@ -20,8 +20,11 @@ function patch(
   container: any
 ) {
   // 判断vnode是什么类型的，是元素类型还是组件类型？由于我们优先处理的是根组件，所以先只考虑组件类型
-  // processElement()
-  processComponent(vnode, container);
+  if (typeof vnode.type === "string") {
+    processElement(vnode, container);
+  } else {
+    processComponent(vnode, container);
+  }
 }
 
 function processComponent(
@@ -46,4 +49,36 @@ function mountComponent(
 function setupRenderEffect(instance: any, container: any) {
   const subTree = instance.render();
   patch(subTree, container);
+}
+function processElement(
+  vnode: { type: any; props: any; children: any },
+  container: any
+) {
+  mountElement(vnode, container);
+}
+function mountElement(
+  vnode: { type: any; props: any; children: any },
+  container: any
+) {
+  const el = document.createElement(vnode.type);
+  // 处理children
+  const { children, props } = vnode;
+  if (typeof children === "string") {
+    // 说明是简单的文本形式
+    el.innerText = children;
+  } else if (Array.isArray(children)) {
+    mountChildren(children, el);
+  }
+  // 处理props(props传递是对象，所以需要遍历对象)
+  for (let key in props) {
+    const val = props[key];
+    el.setAttribute(key, val);
+  }
+  // 挂载
+  container.append(el);
+}
+function mountChildren(children: any[], container: any) {
+  children.forEach((ele) => {
+    patch(ele, container);
+  });
 }
