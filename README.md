@@ -44,3 +44,6 @@ https://www.wolai.com/crhsLUuETSRwCZeXWBtXwE
 
 ## 实现computed功能
 https://www.wolai.com/dvb9rb9KnViYfuq9yXriTo
+
+## 实现初始化component主流程
+https://www.wolai.com/qGdf8CfjT9Lbe95giqLxPW
