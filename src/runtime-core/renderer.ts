@@ -77,12 +77,24 @@ function setupRenderEffect(instance: any, container: any) {
   const subTree = instance.render();
   patch(subTree, container);
 }
+/**
+ * 描述：处理虚拟dom类型是元素类型时的逻辑
+ * @param { any } vnode 虚拟dom元素
+ * @param { any } container 虚拟dom需要挂载的父节点元素
+ * @return void
+ */
 function processElement(
   vnode: { type: any; props: any; children: any },
   container: any
 ) {
   mountElement(vnode, container);
 }
+/**
+ * 描述：初始化元素渲染逻辑
+ * @param { any } vnode 虚拟dom元素
+ * @param { any } container 虚拟dom需要挂载的父节点元素
+ * @return void
+ */
 function mountElement(
   vnode: { type: any; props: any; children: any },
   container: any
@@ -104,6 +116,12 @@ function mountElement(
   // 挂载
   container.append(el);
 }
+/**
+ * 描述：处理虚拟dom存在子元素的情况
+ * @param { any[] } children 子元素的虚拟dom集合
+ * @param { any } container 子元素的虚拟dom所属父节点元素
+ * @return void
+ */
 function mountChildren(children: any[], container: any) {
   children.forEach((ele) => {
     patch(ele, container);
