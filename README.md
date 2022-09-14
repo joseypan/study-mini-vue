@@ -47,3 +47,6 @@ https://www.wolai.com/dvb9rb9KnViYfuq9yXriTo
 
 ## 实现初始化component主流程
 https://www.wolai.com/qGdf8CfjT9Lbe95giqLxPW
+
+## 使用rollup打包
+https://www.wolai.com/VkmKQf4sw5QhhYrGPGy87
