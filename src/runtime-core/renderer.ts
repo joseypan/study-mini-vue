@@ -10,6 +10,7 @@ export function render(
     type: any; // 由于我们后续调用是在createApp(xxx).mount(xxx),所以返回一定是有mount方法的
     props: any;
     children: any;
+    el?: any;
   },
   container: any
 ) {
@@ -27,6 +28,7 @@ function patch(
     type: any;
     props: any;
     children: any;
+    el?: any;
   },
   container: any
 ) {
@@ -44,7 +46,7 @@ function patch(
  * @return void
  */
 function processComponent(
-  vnode: { type: any; props: any; children: any },
+  vnode: { type: any; props: any; children: any; el?: any },
   container: any
 ) {
   // 组件初始化状态的处理
@@ -58,7 +60,7 @@ function processComponent(
  * @return void
  */
 function mountComponent(
-  vnode: { type: any; props: any; children: any },
+  vnode: { type: any; props: any; children: any; el?: any },
   container: any
 ) {
   // 创建组件实例化对象;
@@ -74,8 +76,12 @@ function mountComponent(
  * @return void
  */
 function setupRenderEffect(instance: any, container: any) {
-  const subTree = instance.render();
+  // 这里在调用render的时候，需要把this指向proxy对象
+  const { proxy } = instance;
+  const subTree = instance.render.call(proxy);
   patch(subTree, container);
+  // 在所有元素的渲染之后再去获取vnode的第一项
+  instance.vnode.el = subTree.el;
 }
 /**
  * 描述：处理虚拟dom类型是元素类型时的逻辑
@@ -84,7 +90,7 @@ function setupRenderEffect(instance: any, container: any) {
  * @return void
  */
 function processElement(
-  vnode: { type: any; props: any; children: any },
+  vnode: { type: any; props: any; children: any; el? },
   container: any
 ) {
   mountElement(vnode, container);
@@ -96,10 +102,11 @@ function processElement(
  * @return void
  */
 function mountElement(
-  vnode: { type: any; props: any; children: any },
+  vnode: { type: any; props: any; children: any; el? },
   container: any
 ) {
   const el = document.createElement(vnode.type);
+  vnode.el = el;
   // 处理children
   const { children, props } = vnode;
   if (typeof children === "string") {
