@@ -53,3 +53,6 @@ https://www.wolai.com/VkmKQf4sw5QhhYrGPGy87
 
 ## 实现初始化element主流程
 https://www.wolai.com/esJQetcNqTV5bYFGyZpL8o
+
+## 实现组件代理对象
+https://www.wolai.com/9YETezNe1dtr5LLMiMJrrq
