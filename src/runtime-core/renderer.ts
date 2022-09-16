@@ -1,3 +1,4 @@
+import { ShapeFlags } from "./../share/shapeFlags";
 import { createComponentInstance, setupComponent } from "./component";
 /**
  * 描述：处理虚拟dom渲染的逻辑
@@ -11,6 +12,7 @@ export function render(
     props: any;
     children: any;
     el?: any;
+    shapeFlag: any;
   },
   container: any
 ) {
@@ -29,11 +31,14 @@ function patch(
     props: any;
     children: any;
     el?: any;
+    shapeFlag: any;
   },
   container: any
 ) {
   // 判断vnode是什么类型的，是元素类型还是组件类型？由于我们优先处理的是根组件，所以先只考虑组件类型
-  if (typeof vnode.type === "string") {
+  const { shapeFlag } = vnode;
+  // 这里逻辑与有值证明当前位上是有数据的
+  if (shapeFlag & ShapeFlags.ELEMENT) {
     processElement(vnode, container);
   } else {
     processComponent(vnode, container);
@@ -90,7 +95,7 @@ function setupRenderEffect(instance: any, container: any) {
  * @return void
  */
 function processElement(
-  vnode: { type: any; props: any; children: any; el? },
+  vnode: { type: any; props: any; children: any; el?; shapeFlag: any },
   container: any
 ) {
   mountElement(vnode, container);
@@ -102,17 +107,17 @@ function processElement(
  * @return void
  */
 function mountElement(
-  vnode: { type: any; props: any; children: any; el? },
+  vnode: { type: any; props: any; children: any; el?; shapeFlag: any },
   container: any
 ) {
   const el = document.createElement(vnode.type);
   vnode.el = el;
   // 处理children
-  const { children, props } = vnode;
-  if (typeof children === "string") {
+  const { children, props, shapeFlag } = vnode;
+  if (shapeFlag ^ ShapeFlags.CHILDREN_TEXT) {
     // 说明是简单的文本形式
     el.innerText = children;
-  } else if (Array.isArray(children)) {
+  } else if (shapeFlag & ShapeFlags.CHILDREN_ARRAY) {
     mountChildren(children, el);
   }
   // 处理props(props传递是对象，所以需要遍历对象)

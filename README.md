@@ -56,3 +56,6 @@ https://www.wolai.com/esJQetcNqTV5bYFGyZpL8o
 
 ## 实现组件代理对象
 https://www.wolai.com/9YETezNe1dtr5LLMiMJrrq
+
+## 实现shapeFlags
+https://www.wolai.com/eUqKa7P7vXv7m9pHQgi6Me
