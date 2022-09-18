@@ -114,7 +114,7 @@ function mountElement(
   vnode.el = el;
   // 处理children
   const { children, props, shapeFlag } = vnode;
-  if (shapeFlag ^ ShapeFlags.CHILDREN_TEXT) {
+  if (shapeFlag & ShapeFlags.CHILDREN_TEXT) {
     // 说明是简单的文本形式
     el.innerText = children;
   } else if (shapeFlag & ShapeFlags.CHILDREN_ARRAY) {
