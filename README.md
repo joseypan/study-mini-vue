@@ -59,3 +59,6 @@ https://www.wolai.com/9YETezNe1dtr5LLMiMJrrq
 
 ## 实现shapeFlags
 https://www.wolai.com/eUqKa7P7vXv7m9pHQgi6Me
+
+## 实现事件注册功能
+https://www.wolai.com/cBvsi3JJc6AN9x6tXQfwvw

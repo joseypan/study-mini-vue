@@ -7,7 +7,22 @@ const App = {
       {
         class: "red",
       },
-      [h("p", { class: "red" }, "hello"), h("p", { class: "blue" }, this.msg)]
+      [
+        h("p", { class: "red" }, "hello"),
+        h(
+          "p",
+          {
+            class: "blue",
+            onClick: () => {
+              console.log("click");
+            },
+            onMousedown: () => {
+              console.log("mousedown");
+            },
+          },
+          this.msg
+        ),
+      ]
     );
   },
   setup() {

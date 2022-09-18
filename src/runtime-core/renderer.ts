@@ -123,7 +123,15 @@ function mountElement(
   // 处理props(props传递是对象，所以需要遍历对象)
   for (let key in props) {
     const val = props[key];
-    el.setAttribute(key, val);
+    // 事件的格式是on+大写字母，当属性是以此开头的时候，默认是一个事件
+    const isEvent = (key) => /^on[A-Z]/.test(key);
+    if (isEvent(key)) {
+      // 需要绑定在当前元素上，也就是vnode的el上
+      const event = key.slice(2).toLocaleLowerCase();
+      el.addEventListener(event, val);
+    } else {
+      el.setAttribute(key, val);
+    }
   }
   // 挂载
   container.append(el);
