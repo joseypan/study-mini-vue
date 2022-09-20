@@ -16,3 +16,11 @@ export const isObject = (data: unknown) => {
 export function hasChanged(rawValue, newValue) {
   return Object.is(rawValue, newValue);
 }
+/**
+ * 描述：判断对象本身是否有该属性
+ * @param { any } target 目标对象
+ * @param { any } key 查询的属性key
+ * @return boolean true表示包含该属性 false表示不包含该属性
+ */
+export const hasOwn = (target, key) =>
+  Object.prototype.hasOwnProperty.call(target, key);

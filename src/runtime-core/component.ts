@@ -1,3 +1,5 @@
+import { shallowReadonly } from "../reactivity/reactive";
+import { initProps } from "./componentProps";
 import { PublicInstanceProxyHandlers } from "./componentPublicInstance";
 
 /**
@@ -30,6 +32,7 @@ export function setupComponent(instance: {
   proxy: any;
 }) {
   // 处理props
+  initProps(instance, instance.vnode.props);
   // 处理slot
   // 处理setup
   setupStatefulComponent(instance);
@@ -44,6 +47,7 @@ function setupStatefulComponent(instance: {
   type: any;
   proxy: any;
   setupState?;
+  props?;
 }) {
   // 创建代理对象，用来收集组件的相关数据
   const proxy = new Proxy({ _instance: instance }, PublicInstanceProxyHandlers);
@@ -53,7 +57,7 @@ function setupStatefulComponent(instance: {
   if (setup) {
     // 只有当setup存在时才需要做处理
     // setup是一个function但是其返回值有两种形式，一种是object一种是function。优先只考虑object类型
-    const setupResult = setup();
+    const setupResult = setup(shallowReadonly(instance.props));
     handleSetupResult(instance, setupResult);
   }
 }
