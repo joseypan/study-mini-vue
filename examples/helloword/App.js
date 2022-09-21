@@ -18,12 +18,24 @@ const App = {
       //   },
       //   this.msg
       // ),
-      h(Foo, { count: 2 }, []),
+      h(
+        Foo,
+        { count: 2, onAdd: this.handleAdd, onFooBar: this.handleFooBar },
+        []
+      ),
     ]);
   },
   setup() {
+    const handleAdd = (a, b) => {
+      console.log("handleAdd_App", a, b);
+    };
+    const handleFooBar = () => {
+      console.log("handleFooBar");
+    };
     return {
       msg: "joseypan",
+      handleAdd,
+      handleFooBar,
     };
   },
 };

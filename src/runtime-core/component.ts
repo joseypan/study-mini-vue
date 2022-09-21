@@ -1,4 +1,5 @@
 import { shallowReadonly } from "../reactivity/reactive";
+import { emit } from "./componentEmit";
 import { initProps } from "./componentProps";
 import { PublicInstanceProxyHandlers } from "./componentPublicInstance";
 
@@ -18,7 +19,9 @@ export function createComponentInstance(vnode: {
     type: vnode.type,
     proxy: null,
     el: undefined,
+    emit: () => {},
   };
+  component.emit = emit.bind(null, component) as any;
   return component;
 }
 /**
@@ -48,6 +51,7 @@ function setupStatefulComponent(instance: {
   proxy: any;
   setupState?;
   props?;
+  emit?;
 }) {
   // 创建代理对象，用来收集组件的相关数据
   const proxy = new Proxy({ _instance: instance }, PublicInstanceProxyHandlers);
@@ -57,7 +61,10 @@ function setupStatefulComponent(instance: {
   if (setup) {
     // 只有当setup存在时才需要做处理
     // setup是一个function但是其返回值有两种形式，一种是object一种是function。优先只考虑object类型
-    const setupResult = setup(shallowReadonly(instance.props));
+    // setup方法的第二个参数是一个对象，对象中包含了emit，要使得当前可以访问到，需要把emit挂载在instance上
+    const setupResult = setup(shallowReadonly(instance.props), {
+      emit: instance.emit,
+    });
     handleSetupResult(instance, setupResult);
   }
 }
