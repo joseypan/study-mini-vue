@@ -62,3 +62,6 @@ https://www.wolai.com/eUqKa7P7vXv7m9pHQgi6Me
 
 ## 实现事件注册功能
 https://www.wolai.com/cBvsi3JJc6AN9x6tXQfwvw
+
+## 实现组件slots功能
+https://www.wolai.com/w4VcXpXTLxRh4jwphYy3Xr
