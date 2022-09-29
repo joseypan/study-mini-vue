@@ -13,6 +13,7 @@ export function render(
     children: any;
     el?: any;
     shapeFlag: any;
+    slots: any;
   },
   container: any
 ) {
@@ -32,6 +33,7 @@ function patch(
     children: any;
     el?: any;
     shapeFlag: any;
+    slots: any;
   },
   container: any
 ) {
@@ -51,7 +53,7 @@ function patch(
  * @return void
  */
 function processComponent(
-  vnode: { type: any; props: any; children: any; el?: any },
+  vnode: { type: any; props: any; children: any; el?: any; slots: any },
   container: any
 ) {
   // 组件初始化状态的处理
@@ -65,7 +67,7 @@ function processComponent(
  * @return void
  */
 function mountComponent(
-  vnode: { type: any; props: any; children: any; el?: any },
+  vnode: { type: any; props: any; children: any; el?: any; slots: any },
   container: any
 ) {
   // 创建组件实例化对象;

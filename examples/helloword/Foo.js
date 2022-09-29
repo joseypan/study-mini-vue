@@ -1,4 +1,4 @@
-import { h } from "../../lib/guid-mini-vue.esm.js";
+import { h, renderSlots } from "../../lib/guid-mini-vue.esm.js";
 
 const Foo = {
   setup(props, { emit }) {
@@ -13,9 +13,13 @@ const Foo = {
     return { handleClick };
   },
   render() {
+    console.log("$slots", this.$slots);
+    const age = 18;
     return h("div", {}, [
       h("div", {}, `foo:${this.count}`),
       h("button", { onClick: this.handleClick }, "click button"),
+      renderSlots(this.$slots, "footer"),
+      renderSlots(this.$slots, "default", { age }),
     ]);
   },
 };

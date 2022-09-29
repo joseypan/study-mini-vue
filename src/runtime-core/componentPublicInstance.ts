@@ -3,6 +3,7 @@ import { hasOwn } from "../share";
 // 拓展：针对后续调用$el $data等等的优化
 const publicPropertiesMap = {
   $el: (i) => i.vnode.el,
+  $slots: (i) => i.slots,
 };
 export const PublicInstanceProxyHandlers = {
   get({ _instance: instance }, key) {

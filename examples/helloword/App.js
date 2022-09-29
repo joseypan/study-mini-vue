@@ -18,10 +18,19 @@ const App = {
       //   },
       //   this.msg
       // ),
+      // [
+      //         h("p", {}, "123"),
+      //         h("p", {}, "456"),
+      //       ]
       h(
         Foo,
         { count: 2, onAdd: this.handleAdd, onFooBar: this.handleFooBar },
-        []
+        // [h("p", {}, "123"), h("p", {}, "456")]
+        // h("p", {}, "123")
+        {
+          default: ({ age }) => h("p", {}, "default" + age),
+          footer: () => h("p", {}, "footer"),
+        }
       ),
     ]);
   },
