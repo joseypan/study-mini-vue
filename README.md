@@ -65,3 +65,6 @@ https://www.wolai.com/cBvsi3JJc6AN9x6tXQfwvw
 
 ## 实现组件slots功能
 https://www.wolai.com/w4VcXpXTLxRh4jwphYy3Xr
+
+## 实现Fragment和Text类型节点
+https://www.wolai.com/htfoAMvx1WQvkyvtd4xG4g
