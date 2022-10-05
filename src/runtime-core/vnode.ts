@@ -3,6 +3,7 @@ import { ShapeFlags } from "../share/shapeFlags";
  * 描述：创建Fragment类型
  */
 export const Fragment = Symbol("Fragment");
+export const Text = Symbol("Text");
 /**
  * 描述：创建虚拟dom
  * @param { object|string } type 节点的类型，如果是element就是string,如果是component就是object
@@ -28,6 +29,16 @@ export function createVnode(type, props?, children?) {
     }
   }
   return vnode;
+}
+
+/**
+ * 描述：创建Text类型的文本节点
+ * @param { string } text 文本内容
+ * @return
+ */
+export function createTextVNode(text: string) {
+  // 创建一个新节点，类型为Text，children为text
+  return createVnode(Text, {}, text);
 }
 
 function getShapeFlag(type) {

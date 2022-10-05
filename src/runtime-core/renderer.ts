@@ -1,6 +1,6 @@
 import { ShapeFlags } from "./../share/shapeFlags";
 import { createComponentInstance, setupComponent } from "./component";
-import { Fragment } from "./vnode";
+import { Fragment, Text } from "./vnode";
 /**
  * 描述：处理虚拟dom渲染的逻辑
  * @param { any } vnode 虚拟dom
@@ -38,11 +38,14 @@ function patch(
   },
   container: any
 ) {
+  const { type, shapeFlag } = vnode;
   // 判断vnode是什么类型的，是元素类型还是组件类型？由于我们优先处理的是根组件，所以先只考虑组件类型
-  const { shapeFlag, type } = vnode;
   switch (type) {
     case Fragment:
       processFragment(vnode, container);
+      break;
+    case Text:
+      processText(vnode, container);
       break;
     default:
       // 这里逻辑与有值证明当前位上是有数据的
@@ -166,4 +169,9 @@ function mountChildren(children: any[], container: any) {
 function processFragment(vnode: any, container: HTMLElement) {
   //  调用mountChildren方法
   mountChildren(vnode.children, container);
+}
+function processText(vnode: any, container: HTMLElement) {
+  const { children } = vnode;
+  const textNode = document.createTextNode(children);
+  container.append(textNode);
 }

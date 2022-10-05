@@ -1,4 +1,4 @@
-import { h } from "../../lib/guid-mini-vue.esm.js";
+import { createTextVNode, h } from "../../lib/guid-mini-vue.esm.js";
 import Foo from "./Foo.js";
 const App = {
   render() {
@@ -29,7 +29,7 @@ const App = {
         // h("p", {}, "123")
         {
           default: ({ age }) => h("p", {}, "default" + age),
-          footer: () => h("p", {}, "footer"),
+          footer: () => [h("p", {}, "footer"), createTextVNode("hello text")],
         }
       ),
     ]);
