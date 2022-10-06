@@ -1,7 +1,14 @@
-import { h, renderSlots } from "../../lib/guid-mini-vue.esm.js";
+import {
+  h,
+  renderSlots,
+  getCurrentInstance,
+} from "../../lib/guid-mini-vue.esm.js";
 
 const Foo = {
+  name: "Foo",
   setup(props, { emit }) {
+    const instance = getCurrentInstance();
+    console.log("instance", instance);
     console.log("props", props);
     const handleClick = () => {
       console.log("handle_click");

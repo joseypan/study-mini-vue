@@ -1,6 +1,11 @@
-import { createTextVNode, h } from "../../lib/guid-mini-vue.esm.js";
+import {
+  createTextVNode,
+  h,
+  getCurrentInstance,
+} from "../../lib/guid-mini-vue.esm.js";
 import Foo from "./Foo.js";
 const App = {
+  name: "App",
   render() {
     window.self = this;
     return h("div", {}, [
@@ -35,6 +40,8 @@ const App = {
     ]);
   },
   setup() {
+    const instance = getCurrentInstance();
+    console.log("instance", instance);
     const handleAdd = (a, b) => {
       console.log("handleAdd_App", a, b);
     };
