@@ -1,3 +1,4 @@
+import { provider } from "./apiInject";
 import { shallowReadonly } from "../reactivity/reactive";
 import { emit } from "./componentEmit";
 import { initProps } from "./componentProps";
@@ -14,6 +15,7 @@ export function createComponentInstance(vnode: {
   props: any;
   children: any;
   el?: any;
+  provider: any;
   slots: any;
 }) {
   const component = {
@@ -22,6 +24,7 @@ export function createComponentInstance(vnode: {
     proxy: null,
     el: undefined,
     slots: {},
+    provider: {},
     emit: () => {},
   };
   component.emit = emit.bind(null, component) as any;
