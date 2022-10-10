@@ -10,21 +10,24 @@ import { initSlots } from "./componentSlots";
  * @param { any } vnode 虚拟dom
  * @return  object
  */
-export function createComponentInstance(vnode: {
-  type: any;
-  props: any;
-  children: any;
-  el?: any;
-  provider: any;
-  slots: any;
-}) {
+export function createComponentInstance(
+  vnode: {
+    type: any;
+    props: any;
+    children: any;
+    el?: any;
+    provider?: any;
+    slots: any;
+  },
+  parent: any
+) {
   const component = {
     vnode,
     type: vnode.type,
     proxy: null,
     el: undefined,
     slots: {},
-    provider: {},
+    provider: parent ? parent.provider : {},
     emit: () => {},
   };
   component.emit = emit.bind(null, component) as any;
@@ -36,9 +39,16 @@ export function createComponentInstance(vnode: {
  * @return void
  */
 export function setupComponent(instance: {
-  vnode: { type: any; props: any; children: any; el?: any; slots: any };
+  vnode: {
+    type: any;
+    props: any;
+    children: any;
+    el?: any;
+    slots: any;
+  };
   type: any;
   proxy: any;
+  provider: any;
 }) {
   // 处理props
   initProps(instance, instance.vnode.props);
@@ -59,6 +69,7 @@ function setupStatefulComponent(instance: {
   setupState?;
   props?;
   emit?;
+  provider: any;
 }) {
   // 创建代理对象，用来收集组件的相关数据
   const proxy = new Proxy({ _instance: instance }, PublicInstanceProxyHandlers);

@@ -20,5 +20,6 @@ export const provider = (key: string, data: any) => {
  */
 export const inject = (key: string) => {
   const instance = getCurrentInstance();
-  const { parent } = instance;
+  const { provider }: any = instance;
+  return provider[key];
 };

@@ -19,7 +19,7 @@ export function render(
   container: any
 ) {
   // 调用patch方法不断去处理容器和vnode之间的关系处理
-  patch(vnode, container);
+  patch(vnode, container, null);
 }
 /**
  * 描述：处理渲染逻辑
@@ -36,13 +36,14 @@ function patch(
     shapeFlag: any;
     slots: any;
   },
-  container: any
+  container: any,
+  parent: any
 ) {
   const { type, shapeFlag } = vnode;
   // 判断vnode是什么类型的，是元素类型还是组件类型？由于我们优先处理的是根组件，所以先只考虑组件类型
   switch (type) {
     case Fragment:
-      processFragment(vnode, container);
+      processFragment(vnode, container, parent);
       break;
     case Text:
       processText(vnode, container);
@@ -50,9 +51,9 @@ function patch(
     default:
       // 这里逻辑与有值证明当前位上是有数据的
       if (shapeFlag & ShapeFlags.ELEMENT) {
-        processElement(vnode, container);
+        processElement(vnode, container, parent);
       } else {
-        processComponent(vnode, container);
+        processComponent(vnode, container, parent);
       }
       break;
   }
@@ -65,10 +66,11 @@ function patch(
  */
 function processComponent(
   vnode: { type: any; props: any; children: any; el?: any; slots: any },
-  container: any
+  container: any,
+  parent: any
 ) {
   // 组件初始化状态的处理
-  mountComponent(vnode, container);
+  mountComponent(vnode, container, parent);
   // 组件更新状态的处理
 }
 /**
@@ -79,10 +81,11 @@ function processComponent(
  */
 function mountComponent(
   vnode: { type: any; props: any; children: any; el?: any; slots: any },
-  container: any
+  container: any,
+  parent: any
 ) {
   // 创建组件实例化对象;
-  const instance = createComponentInstance(vnode);
+  const instance = createComponentInstance(vnode, parent);
   // 处理组件的setup中的属性挂载问题;
   setupComponent(instance);
   // 渲染组件内容;
@@ -97,7 +100,7 @@ function setupRenderEffect(instance: any, container: any) {
   // 这里在调用render的时候，需要把this指向proxy对象
   const { proxy } = instance;
   const subTree = instance.render.call(proxy);
-  patch(subTree, container);
+  patch(subTree, container, instance);
   // 在所有元素的渲染之后再去获取vnode的第一项
   instance.vnode.el = subTree.el;
 }
@@ -109,9 +112,10 @@ function setupRenderEffect(instance: any, container: any) {
  */
 function processElement(
   vnode: { type: any; props: any; children: any; el?; shapeFlag: any },
-  container: any
+  container: any,
+  parent: any
 ) {
-  mountElement(vnode, container);
+  mountElement(vnode, container, parent);
 }
 /**
  * 描述：初始化元素渲染逻辑
@@ -121,7 +125,8 @@ function processElement(
  */
 function mountElement(
   vnode: { type: any; props: any; children: any; el?; shapeFlag: any },
-  container: any
+  container: any,
+  parent: any
 ) {
   const el = document.createElement(vnode.type);
   vnode.el = el;
@@ -131,7 +136,7 @@ function mountElement(
     // 说明是简单的文本形式
     el.innerText = children;
   } else if (shapeFlag & ShapeFlags.CHILDREN_ARRAY) {
-    mountChildren(children, el);
+    mountChildren(children, el, parent);
   }
   // 处理props(props传递是对象，所以需要遍历对象)
   for (let key in props) {
@@ -155,9 +160,9 @@ function mountElement(
  * @param { any } container 子元素的虚拟dom所属父节点元素
  * @return void
  */
-function mountChildren(children: any[], container: any) {
+function mountChildren(children: any[], container: any, parent: any) {
   children.forEach((ele) => {
-    patch(ele, container);
+    patch(ele, container, parent);
   });
 }
 /**
@@ -166,9 +171,9 @@ function mountChildren(children: any[], container: any) {
  * @param { HTMLElement } container
  * @return
  */
-function processFragment(vnode: any, container: HTMLElement) {
+function processFragment(vnode: any, container: HTMLElement, parent: any) {
   //  调用mountChildren方法
-  mountChildren(vnode.children, container);
+  mountChildren(vnode.children, container, parent);
 }
 function processText(vnode: any, container: HTMLElement) {
   const { children } = vnode;
