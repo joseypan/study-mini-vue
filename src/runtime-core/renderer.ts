@@ -100,6 +100,7 @@ function setupRenderEffect(instance: any, container: any) {
   // 这里在调用render的时候，需要把this指向proxy对象
   const { proxy } = instance;
   const subTree = instance.render.call(proxy);
+  console.log("instance", instance);
   patch(subTree, container, instance);
   // 在所有元素的渲染之后再去获取vnode的第一项
   instance.vnode.el = subTree.el;

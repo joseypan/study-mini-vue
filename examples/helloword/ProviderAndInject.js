@@ -12,17 +12,19 @@ const Consumer = {
     const name = inject("name");
     const age = inject("age");
     const gender = inject("gender");
+    const grade = inject("grade", () => "third");
     return {
       name,
       age,
       gender,
+      grade,
     };
   },
   render() {
     return h(
       "div",
       {},
-      `CardInfo : ${this.name}(${this.age} years old,gender:${this.gender})`
+      `CardInfo : ${this.name}(${this.age} years old,gender:${this.gender},grade:${this.grade})`
     );
   },
 };
@@ -30,10 +32,15 @@ const ProviderMiddleWare = {
   name: "ProviderMiddleWare",
   setup() {
     provider("gender", "female");
-    return {};
+    provider("name", "mike");
+    const name = inject("name");
+    return { name };
   },
   render() {
-    return h(Consumer);
+    return h("div", {}, [
+      h("p", {}, `ProviderMiddleWare:${this.name}`),
+      h(Consumer),
+    ]);
   },
 };
 const Provider = {
@@ -46,4 +53,11 @@ const Provider = {
     return h("div", {}, [h(ProviderMiddleWare)]);
   },
 };
-export default Provider;
+const App = {
+  name: "App",
+  setup() {},
+  render() {
+    return h("div", {}, [h(Provider)]);
+  },
+};
+export default App;
