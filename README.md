@@ -95,3 +95,7 @@ https://www.wolai.com/htfoAMvx1WQvkyvtd4xG4g
 ## 实现 provider & inject 功能
 
 https://www.wolai.com/rUPHHKgCTdG4YkkvA2G3a8
+
+## 实现自定义渲染器 custom renderer
+
+https://www.wolai.com/2PQ6TRzyFB4T1ovEtfsvBm
