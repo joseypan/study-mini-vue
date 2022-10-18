@@ -4,6 +4,7 @@ import { emit } from "./componentEmit";
 import { initProps } from "./componentProps";
 import { PublicInstanceProxyHandlers } from "./componentPublicInstance";
 import { initSlots } from "./componentSlots";
+import { proxyRefs } from "../reactivity";
 
 /**
  * 描述：创建组件实例化对象
@@ -87,7 +88,7 @@ function setupStatefulComponent(instance: {
     });
     //调用完成setup之后就可以重置了
     setCurrentInstance(null);
-    handleSetupResult(instance, setupResult);
+    handleSetupResult(instance, proxyRefs(setupResult));
   }
 }
 function handleSetupResult(instance: any, setupResult: any) {
