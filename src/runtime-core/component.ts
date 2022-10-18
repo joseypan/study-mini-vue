@@ -20,7 +20,7 @@ export function createComponentInstance(
     provider?: any;
     slots: any;
   },
-  parent: any
+  parent: any = {}
 ) {
   const component = {
     vnode,
@@ -28,6 +28,7 @@ export function createComponentInstance(
     proxy: null,
     el: undefined,
     slots: {},
+    parent: parent,
     provider: parent ? parent.provider : {},
     emit: () => {},
   };
