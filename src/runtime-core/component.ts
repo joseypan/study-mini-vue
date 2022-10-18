@@ -31,6 +31,8 @@ export function createComponentInstance(
     parent: parent,
     provider: parent ? parent.provider : {},
     emit: () => {},
+    isMounted: false,
+    subTree: null,
   };
   component.emit = emit.bind(null, component) as any;
   return component;

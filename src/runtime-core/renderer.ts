@@ -23,7 +23,7 @@ export function createRenderer(options) {
     container: any
   ) {
     // 调用patch方法不断去处理容器和vnode之间的关系处理
-    patch(vnode, container, null);
+    patch(null, vnode, container, null);
   }
   /**
    * 描述：处理渲染逻辑
@@ -32,6 +32,7 @@ export function createRenderer(options) {
    * @return
    */
   function patch(
+    prevVnode: any,
     vnode: {
       type: any;
       props: any;
@@ -47,17 +48,17 @@ export function createRenderer(options) {
     // 判断vnode是什么类型的，是元素类型还是组件类型？由于我们优先处理的是根组件，所以先只考虑组件类型
     switch (type) {
       case Fragment:
-        processFragment(vnode, container, parent);
+        processFragment(prevVnode, vnode, container, parent);
         break;
       case Text:
-        processText(vnode, container);
+        processText(prevVnode, vnode, container);
         break;
       default:
         // 这里逻辑与有值证明当前位上是有数据的
         if (shapeFlag & ShapeFlags.ELEMENT) {
-          processElement(vnode, container, parent);
+          processElement(prevVnode, vnode, container, parent);
         } else {
-          processComponent(vnode, container, parent);
+          processComponent(prevVnode, vnode, container, parent);
         }
         break;
     }
@@ -69,6 +70,7 @@ export function createRenderer(options) {
    * @return void
    */
   function processComponent(
+    prevVnode: any,
     vnode: { type: any; props: any; children: any; el?: any; slots: any },
     container: any,
     parent: any
@@ -102,12 +104,23 @@ export function createRenderer(options) {
    */
   function setupRenderEffect(instance: any, container: any) {
     effect(() => {
-      // 这里在调用render的时候，需要把this指向proxy对象
-      const { proxy } = instance;
-      const subTree = instance.render.call(proxy);
-      patch(subTree, container, instance);
-      // 在所有元素的渲染之后再去获取vnode的第一项
-      instance.vnode.el = subTree.el;
+      // 这里需要区分一下是第一次渲染的逻辑还是后续渲染的逻辑,给instance添加一个属性，isMounted
+      if (!instance.isMounted) {
+        // 这里在调用render的时候，需要把this指向proxy对象
+        const { proxy } = instance;
+        const subTree = (instance.subTree = instance.render.call(proxy));
+        patch(null, subTree, container, instance);
+        // 在所有元素的渲染之后再去获取vnode的第一项
+        instance.vnode.el = subTree.el;
+        instance.isMounted = true;
+      } else {
+        // 这里其实是想要拿到上一次的subTree和这一次的subTree进行对比
+        const { proxy } = instance;
+        const subTree = instance.render.call(proxy);
+        const prevSubTree = instance.subTree;
+        instance.subTree = subTree;
+        patch(prevSubTree, subTree, container, instance);
+      }
     });
   }
   /**
@@ -117,11 +130,26 @@ export function createRenderer(options) {
    * @return void
    */
   function processElement(
+    prevVnode: any,
     vnode: { type: any; props: any; children: any; el?; shapeFlag: any },
     container: any,
     parent: any
   ) {
-    mountElement(vnode, container, parent);
+    // prevVnode不存在说明是初始化操作
+    if (!prevVnode) {
+      mountElement(vnode, container, parent);
+    } else {
+      patchElement(prevVnode, vnode, container);
+    }
+  }
+  /**
+   * 描述：更新元素
+   * @param {  }
+   * @return
+   */
+  function patchElement(prevVnode: any, vnode: any, container: any) {
+    console.log("prevVnode", prevVnode);
+    console.log("vnode", vnode);
   }
   /**
    * 描述：初始化元素渲染逻辑
@@ -160,7 +188,7 @@ export function createRenderer(options) {
    */
   function mountChildren(children: any[], container: any, parent: any) {
     children.forEach((ele) => {
-      patch(ele, container, parent);
+      patch(null, ele, container, parent);
     });
   }
   /**
@@ -169,11 +197,16 @@ export function createRenderer(options) {
    * @param { HTMLElement } container
    * @return
    */
-  function processFragment(vnode: any, container: HTMLElement, parent: any) {
+  function processFragment(
+    prevVnode: any,
+    vnode: any,
+    container: HTMLElement,
+    parent: any
+  ) {
     //  调用mountChildren方法
     mountChildren(vnode.children, container, parent);
   }
-  function processText(vnode: any, container: HTMLElement) {
+  function processText(prevVnode: any, vnode: any, container: HTMLElement) {
     const { children } = vnode;
     const textNode = document.createTextNode(children);
     container.append(textNode);
