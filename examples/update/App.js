@@ -2,19 +2,18 @@ import { h, ref } from "../../lib/guid-mini-vue.esm.js";
 const App = {
   name: "App",
   setup() {
-    let count = ref(0);
+    let appCount = ref(0);
     const clickHandler = () => {
-      console.log("clickHandler");
-      count.value = count.value + 1;
+      appCount.value++;
     };
     return {
-      count,
+      appCount,
       clickHandler,
     };
   },
   render() {
     return h("div", {}, [
-      h("p", {}, `count:${this.count}`),
+      h("p", {}, `count:${this.appCount}`),
       h("button", { onClick: this.clickHandler }, "click"),
     ]);
   },

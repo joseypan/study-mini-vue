@@ -1,3 +1,5 @@
+import { createDep } from "./dep";
+
 let shouldTrack;
 export class Effective {
   private _fn: any;
@@ -9,7 +11,7 @@ export class Effective {
     this._fn = fn;
     this.schedule = schedule;
   }
-  run() {
+  public run() {
     // 说明已经调用过stop了,那么我们不应该去收集
     if (!this._active) {
       return this._fn();
@@ -21,7 +23,7 @@ export class Effective {
     shouldTrack = false;
     return result;
   }
-  stop() {
+  public stop() {
     // 需要将当前的effect从deps中移除,我们如何通过effect找到其对应的deps呢？需要在effect上记录一下当前的deps
     // 优化：调用多次stop时，也只清除一次
     if (this._active) {
@@ -87,7 +89,7 @@ function track(target, key) {
   let set = depsMap.get(key);
   if (!set) {
     // 说明当前key还未收集，则需要重新创建一个Set结构
-    set = new Set();
+    set = createDep();
     depsMap.set(key, set);
   }
   trackEffects(set);
@@ -126,21 +128,28 @@ export function isTracking() {
  * @return void
  */
 function trigger(target, key) {
+  const deps: any[] = [];
   let depsMap = targetMap.get(target);
-  let set = depsMap.get(key);
-  triggerEffects(set);
+  if (!depsMap) return;
+  const dep = depsMap.get(key);
+  deps.push(dep);
+  const effects: any[] = [];
+  deps.forEach((ele) => {
+    effects.push(...ele);
+  });
+  triggerEffects(createDep(effects));
 }
 /**
  * 描述：处理依赖触发的逻辑
  * @param { Set } set 收集到的依赖集合
  * @return void
  */
-export function triggerEffects(set) {
-  for (let key of set) {
-    if (key.schedule) {
-      key.schedule();
+export function triggerEffects(deps) {
+  for (const dep of deps) {
+    if (dep.schedule) {
+      dep.schedule();
     } else {
-      key.run();
+      dep.run();
     }
   }
 }

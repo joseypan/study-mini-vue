@@ -89,13 +89,13 @@ function setupStatefulComponent(instance: {
     });
     //调用完成setup之后就可以重置了
     setCurrentInstance(null);
-    handleSetupResult(instance, proxyRefs(setupResult));
+    handleSetupResult(instance, setupResult);
   }
 }
 function handleSetupResult(instance: any, setupResult: any) {
   if (typeof setupResult === "object") {
     // 将setup中的属性挂载在实例对象上
-    instance.setupState = setupResult;
+    instance.setupState = proxyRefs(setupResult);
   }
   // 调用一个finishComponentSetup作为处理完setup的结束事件
   finishComponentSetup(instance);
