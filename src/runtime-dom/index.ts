@@ -5,7 +5,7 @@ function createElement(type) {
   return document.createElement(type);
 }
 
-function patchProps(el, key, val) {
+function patchProps(el, key, prevVal, val) {
   // 事件的格式是on+大写字母，当属性是以此开头的时候，默认是一个事件
   const isEvent = (key) => /^on[A-Z]/.test(key);
   if (isEvent(key)) {
@@ -13,7 +13,11 @@ function patchProps(el, key, val) {
     const event = key.slice(2).toLocaleLowerCase();
     el.addEventListener(event, val);
   } else {
-    el.setAttribute(key, val);
+    if (val === null || val === undefined) {
+      el.removeAttribute(key);
+    } else {
+      el.setAttribute(key, val);
+    }
   }
 }
 

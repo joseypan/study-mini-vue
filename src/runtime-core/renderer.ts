@@ -148,8 +148,31 @@ export function createRenderer(options) {
    * @return
    */
   function patchElement(prevVnode: any, vnode: any, container: any) {
-    console.log("prevVnode", prevVnode);
-    console.log("vnode", vnode);
+    const el = (vnode.el = prevVnode.el);
+    const prevProps = prevVnode.props || {};
+    const newProps = vnode.props || {};
+    updateProps(prevProps, newProps, el);
+  }
+  /**
+   * 描述： 处理更新时的props逻辑
+   * @param {  }
+   * @return
+   */
+  function updateProps(prevProps, newProps, el) {
+    //遍历新的props,若当前key在老的props中也存在，且值不相同的，进行更新操作
+    for (let key in newProps) {
+      const prevProp = prevProps[key];
+      const newProp = newProps[key];
+      if (prevProp !== newProp) {
+        patchProps(el, key, prevProp, newProp);
+      }
+    }
+    for (let key in prevProps) {
+      if (!(key in newProps)) {
+        const prevProp = prevProps[key];
+        patchProps(el, key, prevProp, null);
+      }
+    }
   }
   /**
    * 描述：初始化元素渲染逻辑
@@ -175,7 +198,7 @@ export function createRenderer(options) {
     // 处理props(props传递是对象，所以需要遍历对象)
     for (let key in props) {
       const val = props[key];
-      patchProps(el, key, val);
+      patchProps(el, key, null, val);
     }
     // 挂载
     insert(el, container);
