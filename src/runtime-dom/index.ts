@@ -21,9 +21,9 @@ function patchProps(el, key, prevVal, val) {
   }
 }
 
-function insert(el, container) {
+function insert(el, container, anchor) {
   // 挂载
-  container.append(el);
+  container.insertBefore(el, anchor || null);
 }
 function remove(child) {
   // 找到元素的父节点

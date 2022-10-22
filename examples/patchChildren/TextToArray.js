@@ -1,8 +1,8 @@
 import { h, ref } from "../../lib/guid-mini-vue.esm.js";
 const nextChildren = [h("p", {}, "A"), h("p", {}, "B")];
 const prevChildren = "children";
-const ChildrenToText = {
-  name: "TextToText",
+const TextToArray = {
+  name: "TextToArray",
   setup() {
     let isChange = ref(false);
     window.isChange = isChange;
@@ -17,4 +17,4 @@ const ChildrenToText = {
       : h("div", {}, prevChildren);
   },
 };
-export default ChildrenToText;
+export default TextToArray;

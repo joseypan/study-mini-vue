@@ -1,5 +1,5 @@
 import { effect } from "../reactivity/effect";
-import { ShapeFlags } from "./../share/shapeFlags";
+import { ShapeFlags } from "../share/shapeFlags";
 import { createComponentInstance, setupComponent } from "./component";
 import { createAppAPI } from "./createApp";
 import { Fragment, Text } from "./vnode";
@@ -7,7 +7,7 @@ export function createRenderer(options) {
   const {
     createElement,
     patchProps,
-    insert,
+    insert: hostInsert,
     remove: hostRemove,
     setElementText: hostSetElementText,
     removeElementText: hostRemoveElementText,
@@ -30,7 +30,7 @@ export function createRenderer(options) {
     container: any
   ) {
     // 调用patch方法不断去处理容器和vnode之间的关系处理
-    patch(null, vnode, container, null);
+    patch(null, vnode, container, null, null);
   }
   /**
    * 描述：处理渲染逻辑
@@ -49,23 +49,24 @@ export function createRenderer(options) {
       slots: any;
     },
     container: any,
-    parent: any
+    parent: any,
+    anchor: any
   ) {
     const { type, shapeFlag } = vnode;
     // 判断vnode是什么类型的，是元素类型还是组件类型？由于我们优先处理的是根组件，所以先只考虑组件类型
     switch (type) {
       case Fragment:
-        processFragment(prevVnode, vnode, container, parent);
+        processFragment(prevVnode, vnode, container, parent, anchor);
         break;
       case Text:
-        processText(prevVnode, vnode, container);
+        processText(prevVnode, vnode, container, anchor);
         break;
       default:
         // 这里逻辑与有值证明当前位上是有数据的
         if (shapeFlag & ShapeFlags.ELEMENT) {
-          processElement(prevVnode, vnode, container, parent);
+          processElement(prevVnode, vnode, container, parent, anchor);
         } else {
-          processComponent(prevVnode, vnode, container, parent);
+          processComponent(prevVnode, vnode, container, parent, anchor);
         }
         break;
     }
@@ -80,10 +81,11 @@ export function createRenderer(options) {
     prevVnode: any,
     vnode: { type: any; props: any; children: any; el?: any; slots: any },
     container: any,
-    parent: any
+    parent: any,
+    anchor: any
   ) {
     // 组件初始化状态的处理
-    mountComponent(vnode, container, parent);
+    mountComponent(vnode, container, parent, anchor);
     // 组件更新状态的处理
   }
   /**
@@ -95,28 +97,29 @@ export function createRenderer(options) {
   function mountComponent(
     vnode: { type: any; props: any; children: any; el?: any; slots: any },
     container: any,
-    parent: any
+    parent: any,
+    anchor: any
   ) {
     // 创建组件实例化对象;
     const instance = createComponentInstance(vnode, parent);
     // 处理组件的setup中的属性挂载问题;
     setupComponent(instance);
     // 渲染组件内容;
-    setupRenderEffect(instance, container);
+    setupRenderEffect(instance, container, anchor);
   }
   /**
    * 描述：在setup执行完之后处理组件渲染的逻辑
    * @param { any } instance 组件实例化对象
    * @return void
    */
-  function setupRenderEffect(instance: any, container: any) {
+  function setupRenderEffect(instance: any, container: any, anchor: any) {
     effect(() => {
       // 这里需要区分一下是第一次渲染的逻辑还是后续渲染的逻辑,给instance添加一个属性，isMounted
       if (!instance.isMounted) {
         // 这里在调用render的时候，需要把this指向proxy对象
         const { proxy } = instance;
         const subTree = (instance.subTree = instance.render.call(proxy));
-        patch(null, subTree, container, instance);
+        patch(null, subTree, container, instance, anchor);
         // 在所有元素的渲染之后再去获取vnode的第一项
         instance.vnode.el = subTree.el;
         instance.isMounted = true;
@@ -126,7 +129,7 @@ export function createRenderer(options) {
         const subTree = instance.render.call(proxy);
         const prevSubTree = instance.subTree;
         instance.subTree = subTree;
-        patch(prevSubTree, subTree, container, instance);
+        patch(prevSubTree, subTree, container, instance, anchor);
       }
     });
   }
@@ -140,13 +143,14 @@ export function createRenderer(options) {
     prevVnode: any,
     vnode: { type: any; props: any; children: any; el?; shapeFlag: any },
     container: any,
-    parent: any
+    parent: any,
+    anchor: any
   ) {
     // prevVnode不存在说明是初始化操作
     if (!prevVnode) {
-      mountElement(vnode, container, parent);
+      mountElement(vnode, container, parent, anchor);
     } else {
-      patchElement(prevVnode, vnode, container, parent);
+      patchElement(prevVnode, vnode, container, parent, anchor);
     }
   }
   /**
@@ -154,18 +158,24 @@ export function createRenderer(options) {
    * @param {  }
    * @return
    */
-  function patchElement(prevVnode: any, vnode: any, container: any, parent) {
+  function patchElement(
+    prevVnode: any,
+    vnode: any,
+    container: any,
+    parent,
+    anchor
+  ) {
     const el = (vnode.el = prevVnode.el);
     updateProps(prevVnode, vnode, el);
     //更新children
-    patchChildren(prevVnode, vnode, el, parent);
+    patchChildren(prevVnode, vnode, el, parent, anchor);
   }
   /**
    * 描述：处理children的更新逻辑
    * @param {  }
    * @return
    */
-  function patchChildren(prevVnode, vnode, el, parent) {
+  function patchChildren(prevVnode, vnode, el, parent, anchor) {
     const prevShapeFlag = prevVnode.shapeFlag;
     const nextShapeFlag = vnode.shapeFlag;
     const prevChildren = prevVnode.children;
@@ -184,10 +194,90 @@ export function createRenderer(options) {
         // text -> array
         hostRemoveElementText(el);
         // 渲染children元素
-        mountChildren(nextChildren, el, parent);
+        mountChildren(nextChildren, el, parent, anchor);
       } else {
         // array -> array
+        patchKeyedChildren(prevChildren, nextChildren, el, parent);
       }
+    }
+  }
+  /**
+   * 描述：处理array -> array的比较逻辑
+   * @param {  }
+   * @return
+   */
+  function patchKeyedChildren(prevChildren, nextChildren, container, parent) {
+    let index = 0;
+    const prevChildrenLength = prevChildren.length;
+    const nextChildrenLength = nextChildren.length;
+    let prevChildrenIndex = prevChildrenLength - 1;
+    let nextChildrenIndex = nextChildrenLength - 1;
+    // 比较两个vnode是否相等，如何比较呢？
+    const isSameVNode = (n1, n2) => {
+      return n1.type === n2.type && n1.key === n2.key;
+    };
+    // 先比较左端索引，修改index的值
+    while (index <= prevChildrenIndex && index <= nextChildrenIndex) {
+      if (isSameVNode(prevChildren[index], nextChildren[index])) {
+        //相等的部分调用patch方法渲染
+        patch(
+          prevChildren[index],
+          nextChildren[index],
+          container,
+          parent,
+          null
+        );
+      } else {
+        break;
+      }
+      index++;
+    }
+    // 比较右端索引，修改prevChildrenIndex和nextChildrenIndex
+    while (index <= prevChildrenIndex && index <= nextChildrenIndex) {
+      if (
+        isSameVNode(
+          prevChildren[prevChildrenIndex],
+          nextChildren[nextChildrenIndex]
+        )
+      ) {
+        patch(
+          prevChildren[prevChildrenIndex],
+          nextChildren[nextChildrenIndex],
+          container,
+          parent,
+          null
+        );
+      } else {
+        break;
+      }
+      prevChildrenIndex--;
+      nextChildrenIndex--;
+    }
+    if (index > prevChildrenIndex) {
+      //当前遍历的值大于了初始children
+      if (index <= nextChildrenIndex) {
+        //说明是新增元素(这里有一个问题，之前我们写patch方法的时候，都是使用的append,但是我们需要通过anchor进行insertBefore的元素插入)
+        //这里的锚点如何计算呢? 假设是A B -> C A B的情况，index = 0;prevChildrenIndex = -1;nextChildrenIndex = 0;
+        // 锚点元素应该是位于nextChildrenIndex+1位置的el
+        const anchor =
+          nextChildrenIndex + 1 < nextChildrenLength
+            ? nextChildren[nextChildrenIndex + 1].el
+            : null;
+        while (index <= nextChildrenIndex) {
+          patch(null, nextChildren[index], container, parent, anchor);
+          index++;
+        }
+      }
+    } else if (index > nextChildrenIndex) {
+      if (index <= prevChildrenIndex) {
+        // 说明是待删除的元素
+        while (index <= prevChildrenIndex) {
+          hostRemove(prevChildren[index].el);
+          index++;
+        }
+      }
+    } else {
+      //长度相同
     }
   }
   /**
@@ -233,7 +323,8 @@ export function createRenderer(options) {
   function mountElement(
     vnode: { type: any; props: any; children: any; el?; shapeFlag: any },
     container: any,
-    parent: any
+    parent: any,
+    anchor: any
   ) {
     const el = createElement(vnode.type);
     vnode.el = el;
@@ -243,7 +334,7 @@ export function createRenderer(options) {
       // 说明是简单的文本形式
       el.innerText = children;
     } else if (shapeFlag & ShapeFlags.CHILDREN_ARRAY) {
-      mountChildren(children, el, parent);
+      mountChildren(children, el, parent, anchor);
     }
     // 处理props(props传递是对象，所以需要遍历对象)
     for (let key in props) {
@@ -251,7 +342,7 @@ export function createRenderer(options) {
       patchProps(el, key, null, val);
     }
     // 挂载
-    insert(el, container);
+    hostInsert(el, container, anchor);
   }
   /**
    * 描述：处理虚拟dom存在子元素的情况
@@ -259,9 +350,14 @@ export function createRenderer(options) {
    * @param { any } container 子元素的虚拟dom所属父节点元素
    * @return void
    */
-  function mountChildren(children: any[], container: any, parent: any) {
+  function mountChildren(
+    children: any[],
+    container: any,
+    parent: any,
+    anchor: any
+  ) {
     children.forEach((ele) => {
-      patch(null, ele, container, parent);
+      patch(null, ele, container, parent, anchor);
     });
   }
   /**
@@ -274,15 +370,22 @@ export function createRenderer(options) {
     prevVnode: any,
     vnode: any,
     container: HTMLElement,
-    parent: any
+    parent: any,
+    anchor: any
   ) {
     //  调用mountChildren方法
-    mountChildren(vnode.children, container, parent);
+    mountChildren(vnode.children, container, parent, anchor);
   }
-  function processText(prevVnode: any, vnode: any, container: HTMLElement) {
+  function processText(
+    prevVnode: any,
+    vnode: any,
+    container: HTMLElement,
+    anchor: any
+  ) {
     const { children } = vnode;
     const textNode = document.createTextNode(children);
-    container.append(textNode);
+    // container.append(textNode);
+    container.insertBefore(textNode, anchor || null);
   }
   return {
     createApp: createAppAPI(render),

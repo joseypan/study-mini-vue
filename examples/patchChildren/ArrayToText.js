@@ -1,7 +1,7 @@
 import { h, ref } from "../../lib/guid-mini-vue.esm.js";
 const nextChildren = "newChildren";
 const prevChildren = [h("p", {}, "A"), h("p", {}, "B")];
-const ChildrenToText = {
+const ArrayToText = {
   name: "ArrayToText",
   setup() {
     let isChange = ref(false);
@@ -17,4 +17,4 @@ const ChildrenToText = {
       : h("div", {}, prevChildren);
   },
 };
-export default ChildrenToText;
+export default ArrayToText;
