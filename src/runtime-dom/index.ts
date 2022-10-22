@@ -25,11 +25,27 @@ function insert(el, container) {
   // 挂载
   container.append(el);
 }
+function remove(child) {
+  // 找到元素的父节点
+  const parent = child.parentNode;
+  if (parent) {
+    parent.removeChild(child);
+  }
+}
+function setElementText(el, text) {
+  el.textContent = text;
+}
+function removeElementText(el) {
+  el.textContent = "";
+}
 
 const renderer: any = createRenderer({
   createElement,
   patchProps,
   insert,
+  remove,
+  setElementText,
+  removeElementText,
 });
 
 export function createApp(...arg) {

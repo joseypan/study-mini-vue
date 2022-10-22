@@ -4,7 +4,14 @@ import { createComponentInstance, setupComponent } from "./component";
 import { createAppAPI } from "./createApp";
 import { Fragment, Text } from "./vnode";
 export function createRenderer(options) {
-  const { createElement, patchProps, insert } = options;
+  const {
+    createElement,
+    patchProps,
+    insert,
+    remove: hostRemove,
+    setElementText: hostSetElementText,
+    removeElementText: hostRemoveElementText,
+  } = options;
   /**
    * 描述：处理虚拟dom渲染的逻辑
    * @param { any } vnode 虚拟dom
@@ -139,7 +146,7 @@ export function createRenderer(options) {
     if (!prevVnode) {
       mountElement(vnode, container, parent);
     } else {
-      patchElement(prevVnode, vnode, container);
+      patchElement(prevVnode, vnode, container, parent);
     }
   }
   /**
@@ -147,27 +154,52 @@ export function createRenderer(options) {
    * @param {  }
    * @return
    */
-  function patchElement(prevVnode: any, vnode: any, container: any) {
+  function patchElement(prevVnode: any, vnode: any, container: any, parent) {
     const el = (vnode.el = prevVnode.el);
     updateProps(prevVnode, vnode, el);
     //更新children
-    patchChildren(prevVnode, vnode, el);
+    patchChildren(prevVnode, vnode, el, parent);
   }
   /**
    * 描述：处理children的更新逻辑
    * @param {  }
    * @return
    */
-  function patchChildren(prevVnode, vnode, el) {
+  function patchChildren(prevVnode, vnode, el, parent) {
     const prevShapeFlag = prevVnode.shapeFlag;
-    const nextShapeFlag = vnode.ShapeFlag;
-    console.log(
-      "patchChildren",
-      prevVnode,
-      vnode,
-      prevShapeFlag,
-      nextShapeFlag
-    );
+    const nextShapeFlag = vnode.shapeFlag;
+    const prevChildren = prevVnode.children;
+    const nextChildren = vnode.children;
+    // 判断prevShapeFlag是不是children类型
+    if (nextShapeFlag & ShapeFlags.CHILDREN_TEXT) {
+      if (prevShapeFlag & ShapeFlags.CHILDREN_ARRAY) {
+        unmounteChildren(prevChildren);
+      }
+      // 之前的节点也是text
+      if (prevChildren !== nextChildren) {
+        hostSetElementText(el, nextChildren);
+      }
+    } else {
+      if (prevShapeFlag & ShapeFlags.CHILDREN_TEXT) {
+        // text -> array
+        hostRemoveElementText(el);
+        // 渲染children元素
+        mountChildren(nextChildren, el, parent);
+      } else {
+        // array -> array
+      }
+    }
+  }
+  /**
+   * 描述：删除元素
+   * @param {  }
+   * @return
+   */
+  function unmounteChildren(children) {
+    for (let i = 0; i < children.length; i++) {
+      const el = children[i].el;
+      hostRemove(el);
+    }
   }
   /**
    * 描述： 处理更新时的props逻辑

@@ -12,3 +12,4 @@ export enum ShapeFlags {
   CHILDREN_ARRAY = 1 << 3, // 1000
   SLOT_CHILDREN = 1 << 4,
 }
+// 100 -> 101
