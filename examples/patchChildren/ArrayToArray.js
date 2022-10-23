@@ -45,6 +45,7 @@ const prevChildren = [
   h("p", { key: "B" }, "B"),
   h("p", { key: "C", id: "prev-node" }, "C"),
   h("p", { key: "D" }, "D"),
+  h("p", { key: "H" }, "H"),
   h("p", { key: "E" }, "E"),
   h("p", { key: "F" }, "F"),
 ];

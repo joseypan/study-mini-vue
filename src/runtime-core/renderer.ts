@@ -287,8 +287,15 @@ export function createRenderer(options) {
         const key = nextChildren[i].key;
         nextKeyMap.set(key, nextChildren[i]);
       }
+      let nextOperatedCount = 0;
+      const totalOperateCount = nextChildrenIndex - index + 1;
       // 遍历prevChildren看看有没有已经需要删除的元素
       for (let i = index; i <= prevChildrenIndex; i++) {
+        //这里有一个优化点，如果说数量已经超过了nextChildren的数量，那么一定都是删除操作了
+        if (nextOperatedCount >= totalOperateCount) {
+          // 说明没有这一项，则需要调用删除
+          hostRemove(prevChildren[i].el);
+        }
         const key = prevChildren[i].key;
         if (!nextKeyMap.has(key)) {
           // 说明没有这一项，则需要调用删除
@@ -298,6 +305,7 @@ export function createRenderer(options) {
           // 说明存在，则需要判断是否有更新，若有更新的话则需要渲染新的
           if (isSameVNode(prevChildren[i], nextChild)) {
             patch(prevChildren[i], nextChild, container, parent, null);
+            nextOperatedCount++;
           }
         }
       }
