@@ -281,11 +281,12 @@ export function createRenderer(options) {
       //首先处理prevChildren中有，而nextChildren中没有的元素
       // 这里将nextChildren中的元素用Map进行收集，然后遍历prevChildren看是否有，如果没有的话就将此元素删除
       // 这里遍历的起始索引和结束索引排除掉之前已经进行对比的元素，仅仅是从index到nextChildrenIndex之间
-      const nextKeyMap = new Map();
+      const nextKeyMap = new Map(); //这里的map存的key是key value是索引
+      // 先收集新元素的key对应的Map
       for (let i = index; i <= nextChildrenIndex; i++) {
         //这里可能需要考虑一下没有key存在时的处理方式
         const key = nextChildren[i].key;
-        nextKeyMap.set(key, nextChildren[i]);
+        nextKeyMap.set(key, i);
       }
       let nextOperatedCount = 0;
       const totalOperateCount = nextChildrenIndex - index + 1;
@@ -295,18 +296,36 @@ export function createRenderer(options) {
         if (nextOperatedCount >= totalOperateCount) {
           // 说明没有这一项，则需要调用删除
           hostRemove(prevChildren[i].el);
+          continue;
         }
         const key = prevChildren[i].key;
-        if (!nextKeyMap.has(key)) {
+        let nextIndex;
+        //这里需要判断一下key是否为null或者undefined
+        if (key !== null) {
+          nextIndex = nextKeyMap.get(key);
+        } else {
+          //只能遍历判断了
+          for (let j = index; j <= nextChildrenIndex; j++) {
+            if (isSameVNode(prevChildren[i], nextChildren[j])) {
+              nextIndex = j;
+              break;
+            }
+          }
+        }
+        //说明在新的中没有找到
+        if (nextIndex === undefined) {
           // 说明没有这一项，则需要调用删除
           hostRemove(prevChildren[i].el);
         } else {
-          const nextChild = nextKeyMap.get(key);
           // 说明存在，则需要判断是否有更新，若有更新的话则需要渲染新的
-          if (isSameVNode(prevChildren[i], nextChild)) {
-            patch(prevChildren[i], nextChild, container, parent, null);
-            nextOperatedCount++;
-          }
+          patch(
+            prevChildren[i],
+            nextChildren[nextIndex],
+            container,
+            parent,
+            null
+          );
+          nextOperatedCount++;
         }
       }
     }
