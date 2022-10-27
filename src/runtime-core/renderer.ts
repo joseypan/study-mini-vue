@@ -155,7 +155,11 @@ export function createRenderer(options) {
   }
   /**
    * 描述：更新元素
-   * @param {  }
+   * @param {any} prevVnode 之前的节点
+   * @param {any} vnode 现在的节点
+   * @param {any} container 需要存放的容器
+   * @param {any} parent 父节点元素
+   * @param {any} anchor 需要插入的锚点位置
    * @return
    */
   function patchElement(
@@ -290,6 +294,7 @@ export function createRenderer(options) {
       }
       let nextOperatedCount = 0;
       const totalOperateCount = nextChildrenIndex - index + 1;
+      const nextIndexToOldIndexMap = new Array(totalOperateCount).fill(-1);
       // 遍历prevChildren看看有没有已经需要删除的元素
       for (let i = index; i <= prevChildrenIndex; i++) {
         //这里有一个优化点，如果说数量已经超过了nextChildren的数量，那么一定都是删除操作了
@@ -325,7 +330,28 @@ export function createRenderer(options) {
             parent,
             null
           );
+          nextIndexToOldIndexMap[nextIndex - index] = i;
           nextOperatedCount++;
+        }
+      }
+      const increasingNextIndexMap = getSequence(nextIndexToOldIndexMap);
+      // 遍历需要处理变动的节点，判断是否需要移动
+      // 这里其实是两个递增序列，进行分类
+      const increasingNextIndexMapLength = increasingNextIndexMap.length;
+      let increasingIndex = increasingNextIndexMapLength - 1;
+      for (let i = totalOperateCount - 1; i >= 0; i--) {
+        // 这里需要考虑一点，可能
+        if (i !== increasingNextIndexMap[increasingIndex]) {
+          // 找到需要移动的元素，如何定位其插入的位置呢？
+          const nextIndex = i + index;
+          const anchor =
+            nextIndex + 1 < nextChildrenLength
+              ? nextChildren[nextIndex + 1].el
+              : null;
+          hostInsert(nextChildren[nextIndex].el, container, anchor);
+        } else {
+          //正常渲染即可
+          increasingIndex--;
         }
       }
     }
@@ -440,4 +466,44 @@ export function createRenderer(options) {
   return {
     createApp: createAppAPI(render),
   };
+}
+function getSequence(arr) {
+  const p = arr.slice();
+  const result = [0];
+  let i, j, u, v, c;
+  const len = arr.length;
+  for (i = 0; i < len; i++) {
+    const arrI = arr[i];
+    if (arrI !== 0) {
+      j = result[result.length - 1];
+      if (arr[j] < arrI) {
+        p[i] = j;
+        result.push(i);
+        continue;
+      }
+      u = 0;
+      v = result.length - 1;
+      while (u < v) {
+        c = (u + v) >> 1;
+        if (arr[result[c]] < arrI) {
+          u = c + 1;
+        } else {
+          v = c;
+        }
+      }
+      if (arrI < arr[result[u]]) {
+        if (u > 0) {
+          p[i] = result[u - 1];
+        }
+        result[u] = i;
+      }
+    }
+  }
+  u = result.length;
+  v = result[u - 1];
+  while (u-- > 0) {
+    result[u] = v;
+    v = p[v];
+  }
+  return result;
 }

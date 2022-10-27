@@ -32,12 +32,29 @@ import { h, ref } from "../../lib/guid-mini-vue.esm.js";
 //   h("p", { key: "B" }, "B"),
 // ];
 // prev是 A B C D E F next是 A B G C E F
+// const nextChildren = [
+//   h("p", { key: "A" }, "A"),
+//   h("p", { key: "B" }, "B"),
+//   h("p", { key: "G" }, "G"),
+//   h("p", { key: "C", id: "next-node" }, "C"),
+//   h("p", { key: "E" }, "E"),
+//   h("p", { key: "F" }, "F"),
+// ];
+// const prevChildren = [
+//   h("p", { key: "A" }, "A"),
+//   h("p", { key: "B" }, "B"),
+//   h("p", { key: "C", id: "prev-node" }, "C"),
+//   h("p", { key: "D" }, "D"),
+//   h("p", { key: "H" }, "H"),
+//   h("p", { key: "E" }, "E"),
+//   h("p", { key: "F" }, "F"),
+// ];
 const nextChildren = [
   h("p", { key: "A" }, "A"),
   h("p", { key: "B" }, "B"),
-  h("p", { key: "G" }, "G"),
-  h("p", { key: "C", id: "next-node" }, "C"),
   h("p", { key: "E" }, "E"),
+  h("p", { key: "C", id: "next-node" }, "C"),
+  h("p", { key: "D" }, "D"),
   h("p", { key: "F" }, "F"),
 ];
 const prevChildren = [
@@ -45,7 +62,6 @@ const prevChildren = [
   h("p", { key: "B" }, "B"),
   h("p", { key: "C", id: "prev-node" }, "C"),
   h("p", { key: "D" }, "D"),
-  h("p", { key: "H" }, "H"),
   h("p", { key: "E" }, "E"),
   h("p", { key: "F" }, "F"),
 ];
