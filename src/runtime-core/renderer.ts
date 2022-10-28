@@ -4,6 +4,7 @@ import { createComponentInstance, setupComponent } from "./component";
 import { createAppAPI } from "./createApp";
 import { Fragment, Text } from "./vnode";
 import { shouldComponentUpdate } from "./helpers/componentUpdateUtils";
+import { queueJob } from "./schedule";
 export function createRenderer(options) {
   const {
     createElement,
@@ -139,7 +140,9 @@ export function createRenderer(options) {
    * @return void
    */
   function setupRenderEffect(instance: any, container: any, anchor: any) {
-    instance.update = effect(() => {
+    const componentUpdateFn = () => {
+      //这里的逻辑需要优化一下,我们目前是完全同步的，但我们其实可以优化为等待同步执行完成之后再执行渲染操作
+      console.log("setupRenderEffect");
       // 这里需要区分一下是第一次渲染的逻辑还是后续渲染的逻辑,给instance添加一个属性，isMounted
       if (!instance.isMounted) {
         // 这里在调用render的时候，需要把this指向proxy对象
@@ -163,6 +166,13 @@ export function createRenderer(options) {
         instance.subTree = subTree;
         patch(prevSubTree, subTree, container, instance, anchor);
       }
+    };
+    // 这里需要优化一下，目前相当于每次的修改都会触发effect的触发，但其实我们希望可以等其都触发完成了之后再进行最后的渲染
+    instance.update = effect(componentUpdateFn, {
+      schedule: () => {
+        console.log("----schedule");
+        queueJob(instance.update);
+      },
     });
   }
   function updateComponentPreRender(instance, nextVnode) {
