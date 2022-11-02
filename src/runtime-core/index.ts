@@ -8,3 +8,5 @@ export { createTextVNode } from "./vnode";
 export { getCurrentInstance } from "./component";
 
 export { provider, inject } from "./apiInject";
+
+export { nextTick } from "./schedule";
