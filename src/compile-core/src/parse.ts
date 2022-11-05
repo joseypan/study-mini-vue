@@ -44,6 +44,9 @@ const parseChildren = (context) => {
     console.log("parse element");
     node = parseElement(context);
   }
+  if (!node) {
+    node = parseText(context);
+  }
   nodeList.push(node);
   return nodeList;
 };
@@ -58,7 +61,7 @@ const parseInterpolation = (context) => {
   const closeDelimitre = "}}";
   const endIndex = context.source.indexOf(closeDelimitre);
   context.source = advanceBy(context, openDelimitre.length);
-  const contentRaw = context.source.slice(0, endIndex - closeDelimitre.length);
+  const contentRaw = parseTextData(context, endIndex - closeDelimitre.length);
   const content = contentRaw.trim();
   context.source = advanceBy(
     context,
@@ -104,4 +107,29 @@ const parseTag = (context: any, type: TagType) => {
     type: NodeTypes.ELEMENT,
     tag: tag,
   };
+};
+/**
+ * 描述：解析text
+ * @param { any } context 上下文
+ * @return
+ */
+const parseText = (context) => {
+  // 解析
+  const content = parseTextData(context, context.source.length);
+  // 推进
+  return {
+    type: NodeTypes.TEXT,
+    content,
+  };
+};
+
+/**
+ * 描述：处理text内容
+ * @param {  }
+ * @return
+ */
+const parseTextData = (context, length) => {
+  const content = context.source.slice(0, length);
+  advanceBy(context, content.length);
+  return content;
 };
