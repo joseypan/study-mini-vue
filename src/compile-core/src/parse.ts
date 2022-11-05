@@ -1,4 +1,14 @@
 import { NodeTypes } from "./ast";
+enum TagType {
+  /*
+   * 描述：tag开始标签
+   */
+  TAGSTART = "TAGSTART",
+  /*
+   * 描述：tag结束标签
+   */
+  TAGEND = "TAGEND",
+}
 /**
  * 描述：对模板字符串进行解析
  * @param { string } content 传入的内容
@@ -26,7 +36,14 @@ const createRoot = (children) => {
  */
 const parseChildren = (context) => {
   const nodeList: any = [];
-  const node = parseInterpolation(context);
+  const source = context.source;
+  let node;
+  if (source.startsWith("{{")) {
+    node = parseInterpolation(context);
+  } else if (source.startsWith("<")) {
+    console.log("parse element");
+    node = parseElement(context);
+  }
   nodeList.push(node);
   return nodeList;
 };
@@ -63,8 +80,28 @@ const createParseContext = (content: string) => {
     source: content,
   };
 };
+
 /**
- * 描述：创建children
- * @param {  }
+ * 描述：解析element的逻辑
+ * @param { any } context 上下文环境
  * @return
  */
+const parseElement = (context: any) => {
+  const node = parseTag(context, TagType.TAGSTART);
+  parseTag(context, TagType.TAGEND);
+  return node;
+};
+const parseTag = (context: any, type: TagType) => {
+  // 解析tag
+  // 删除解析出来的内容
+  const tagReg = /^<\/?([a-z]*)/i;
+  const execList: any = tagReg.exec(context.source);
+  const tag = execList[1];
+  context.source = advanceBy(context, execList[0].length);
+  context.source = advanceBy(context, 1);
+  if (type === TagType.TAGEND) return;
+  return {
+    type: NodeTypes.ELEMENT,
+    tag: tag,
+  };
+};
