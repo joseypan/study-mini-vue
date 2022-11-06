@@ -20,6 +20,7 @@ describe("parse", () => {
       expect(ast.children[0]).toStrictEqual({
         type: NodeTypes.ELEMENT,
         tag: "div",
+        children: [],
       });
     });
   });
@@ -30,6 +31,26 @@ describe("parse", () => {
         type: NodeTypes.TEXT,
         content: "hello world",
       });
+    });
+  });
+  test("union type", () => {
+    const ast = baseParese("<div>hi,{{message}}</div>");
+    expect(ast.children[0]).toStrictEqual({
+      type: NodeTypes.ELEMENT,
+      tag: "div",
+      children: [
+        {
+          type: NodeTypes.TEXT,
+          content: "hi,",
+        },
+        {
+          type: NodeTypes.INTERPOLATION,
+          content: {
+            type: NodeTypes.SIMPLE_EXPRESSION,
+            content: "message",
+          },
+        },
+      ],
     });
   });
 });

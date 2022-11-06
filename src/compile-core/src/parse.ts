@@ -16,7 +16,7 @@ enum TagType {
  */
 export const baseParese = (content: string) => {
   const context = createParseContext(content); //创建一个上下文环境
-  return createRoot(parseChildren(context));
+  return createRoot(parseChildren(context, ""));
 };
 /**
  * 描述：创建根节点
@@ -28,28 +28,42 @@ const createRoot = (children) => {
     children,
   };
 };
-
+/**
+ * 描述：判断children是否都被处理完成
+ * @param {  }
+ * @return
+ */
+const isEnd = (context: any, parentTagName: string) => {
+  // 终止的情况：1、context.source已经不存在了 2、已经到了结束的标签
+  const isTagEnd = context.source.startsWith(`</${parentTagName}>`);
+  return !context.source || isTagEnd;
+  // return true;
+};
 /**
  * 描述：解析子节点
  * @param {  }
  * @return
  */
-const parseChildren = (context) => {
+const parseChildren = (context, parentTagName) => {
   const nodeList: any = [];
-  const source = context.source;
+  let source = context.source;
   let node;
-  if (source.startsWith("{{")) {
-    node = parseInterpolation(context);
-  } else if (source.startsWith("<")) {
-    console.log("parse element");
-    node = parseElement(context);
+  // 这里需要将所有的children都进行解析，所以得用一个while循环来解决
+  while (!isEnd(context, parentTagName)) {
+    if (source.startsWith("{{")) {
+      node = parseInterpolation(context);
+    } else if (source.startsWith("<")) {
+      node = parseElement(context);
+    }
+    if (!node) {
+      node = parseText(context);
+    }
+    nodeList.push(node);
+    source = context.source;
   }
-  if (!node) {
-    node = parseText(context);
-  }
-  nodeList.push(node);
   return nodeList;
 };
+
 /**
  * 描述：解析表达式
  * @param {  }
@@ -63,10 +77,7 @@ const parseInterpolation = (context) => {
   context.source = advanceBy(context, openDelimitre.length);
   const contentRaw = parseTextData(context, endIndex - closeDelimitre.length);
   const content = contentRaw.trim();
-  context.source = advanceBy(
-    context,
-    contentRaw.length + closeDelimitre.length
-  );
+  context.source = advanceBy(context, closeDelimitre.length);
   return {
     type: NodeTypes.INTERPOLATION,
     content: {
@@ -91,6 +102,7 @@ const createParseContext = (content: string) => {
  */
 const parseElement = (context: any) => {
   const node = parseTag(context, TagType.TAGSTART);
+  if (node) node.children = parseChildren(context, node.tag);
   parseTag(context, TagType.TAGEND);
   return node;
 };
@@ -106,6 +118,7 @@ const parseTag = (context: any, type: TagType) => {
   return {
     type: NodeTypes.ELEMENT,
     tag: tag,
+    children: [],
   };
 };
 /**
@@ -114,8 +127,18 @@ const parseTag = (context: any, type: TagType) => {
  * @return
  */
 const parseText = (context) => {
+  //这里需要区分，如果是{{开头或者是<开头，则不应该到字符串结尾处
+  let endIndex = context.source.length;
+  const endCharater = ["{{", "<"];
+  for (let i = 0; i < endCharater.length; i++) {
+    const index = context.source.indexOf(endCharater[i]);
+    if (index !== -1 && index < endIndex) {
+      //说明需要重新定位截取位置
+      endIndex = index;
+    }
+  }
   // 解析
-  const content = parseTextData(context, context.source.length);
+  const content = parseTextData(context, endIndex);
   // 推进
   return {
     type: NodeTypes.TEXT,
@@ -130,6 +153,6 @@ const parseText = (context) => {
  */
 const parseTextData = (context, length) => {
   const content = context.source.slice(0, length);
-  advanceBy(context, content.length);
+  context.source = advanceBy(context, content.length);
   return content;
 };
