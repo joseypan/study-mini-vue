@@ -16,7 +16,7 @@ enum TagType {
  */
 export const baseParese = (content: string) => {
   const context = createParseContext(content); //创建一个上下文环境
-  return createRoot(parseChildren(context, ""));
+  return createRoot(parseChildren(context, []));
 };
 /**
  * 描述：创建根节点
@@ -33,27 +33,38 @@ const createRoot = (children) => {
  * @param {  }
  * @return
  */
-const isEnd = (context: any, parentTagName: string) => {
+const isEnd = (context: any, ancestors: { tag: string }[]) => {
   // 终止的情况：1、context.source已经不存在了 2、已经到了结束的标签
-  const isTagEnd = context.source.startsWith(`</${parentTagName}>`);
-  return !context.source || isTagEnd;
-  // return true;
+  const s = context.source;
+  if (s.startsWith("</")) {
+    //把当前项和ancestors的最后一项对比，看是否是一致的，就可以看是否匹配
+    for (let i = ancestors.length - 1; i >= 0; i--) {
+      const tag = ancestors[i].tag;
+      if (sourceStartsWithTag(s, tag)) {
+        return true;
+      }
+    }
+  }
+  return !s;
 };
 /**
  * 描述：解析子节点
  * @param {  }
  * @return
  */
-const parseChildren = (context, parentTagName) => {
+const parseChildren = (context, ancestors) => {
   const nodeList: any = [];
   let source = context.source;
   let node;
   // 这里需要将所有的children都进行解析，所以得用一个while循环来解决
-  while (!isEnd(context, parentTagName)) {
+  while (!isEnd(context, ancestors)) {
     if (source.startsWith("{{")) {
       node = parseInterpolation(context);
     } else if (source.startsWith("<")) {
-      node = parseElement(context);
+      //这里主要是去除结束标签的问题
+      if (/[a-z]/i.test(source[1])) {
+        node = parseElement(context, ancestors);
+      }
     }
     if (!node) {
       node = parseText(context);
@@ -100,11 +111,21 @@ const createParseContext = (content: string) => {
  * @param { any } context 上下文环境
  * @return
  */
-const parseElement = (context: any) => {
+const parseElement = (context: any, ancestors) => {
   const node = parseTag(context, TagType.TAGSTART);
-  if (node) node.children = parseChildren(context, node.tag);
-  parseTag(context, TagType.TAGEND);
+  if (!node) return;
+  ancestors.push(node);
+  node.children = parseChildren(context, ancestors);
+  ancestors.pop();
+  if (sourceStartsWithTag(context.source, node.tag)) {
+    parseTag(context, TagType.TAGEND);
+  } else {
+    throw new Error(`lack end tag:${node.tag}`);
+  }
   return node;
+};
+const sourceStartsWithTag = (source, tag) => {
+  return source.startsWith("</") && source.slice(2, 2 + tag.length) === tag;
 };
 const parseTag = (context: any, type: TagType) => {
   // 解析tag
