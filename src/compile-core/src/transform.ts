@@ -6,10 +6,20 @@ import { NodeTypes } from "./ast";
  * @LastEditors: 潘旭敏
  * @LastEditTime:2022-11-10 00:20
  */
-export const transform = (root, options) => {
+export const transform = (root, options = {}) => {
   const context = createTransformContext(root, options);
   //遍历整个ast树，然后找到对应的节点进行处理
   tranversTree(root, context);
+  root.gencodeNode = createGencodeNode(context);
+};
+/**
+ * 描述：创建转code的节点
+ * @param {  }
+ * @return
+ */
+const createGencodeNode = (context) => {
+  const { root } = context;
+  return root.children[0];
 };
 /**
  * 描述：创建transform的上下文环境
